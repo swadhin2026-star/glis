@@ -1,0 +1,559 @@
+/* ==========================================================================
+   GLIS INDIA - FULLSCREEN BLACK HERO WELCOME INTRO SCREEN
+   Inspired by Magic UI (3D Globe, Shimmer Button, Gradient Text, Border Beam)
+   ========================================================================== */
+
+#heroIntroOverlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000000;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  color: #ffffff;
+  font-family: var(--font-body, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.65s;
+  opacity: 1;
+  visibility: visible;
+}
+
+#heroIntroOverlay.dismissed {
+  opacity: 0;
+  transform: scale(1.03);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Background Effects */
+.hero-bg-galaxy-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.75;
+}
+
+.hero-bg-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 1;
+}
+
+.hero-radial-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.95) 70%, #000000 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hero-retro-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(ellipse at 50% 50%, #000 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 30%, transparent 80%);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   TACTICAL GIS CROSSHAIRS (HUD CORNER BRACKETS & INTERACTIVE RETICLE)
+   ========================================================================== */
+
+/* 1. HUD Static Tactical Corner Crosshairs */
+.hero-corner-crosshair {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  z-index: 15;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.hero-corner-crosshair::before,
+.hero-corner-crosshair::after {
+  content: '';
+  position: absolute;
+  background: #ffffff;
+}
+
+/* Horizontal arm */
+.hero-corner-crosshair::before {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+/* Vertical arm */
+.hero-corner-crosshair::after {
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+.hero-corner-crosshair.top-left {
+  top: 2rem;
+  left: 2rem;
+}
+
+.hero-corner-crosshair.top-right {
+  top: 2rem;
+  right: 2rem;
+}
+
+.hero-corner-crosshair.bottom-left {
+  bottom: 2rem;
+  left: 2rem;
+}
+
+.hero-corner-crosshair.bottom-right {
+  bottom: 2rem;
+  right: 2rem;
+}
+
+/* 2. Interactive Black Hole Gravitational Singularity Reticle Follower */
+.hero-blackhole-follower {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 26px;
+  pointer-events: none;
+  z-index: 9999999;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s ease;
+  opacity: 0;
+}
+
+.hero-blackhole-follower.active {
+  opacity: 1;
+}
+
+/* 1. Pulsing Gravitational Waves (Distortion Ripples) */
+.blackhole-gravitational-wave {
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  animation: blackholeWavePulse 3.5s infinite linear;
+}
+
+@keyframes blackholeWavePulse {
+  0% { transform: scale(0.6) rotate(0deg); opacity: 0.8; }
+  50% { transform: scale(1.35) rotate(180deg); opacity: 0.25; }
+  100% { transform: scale(1.8) rotate(360deg); opacity: 0; }
+}
+
+/* 2. Swirling Accretion Disk Vortex (Clockwise) */
+.blackhole-accretion-disk {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(255, 255, 255, 0.85) 60deg,
+    rgba(255, 255, 255, 0.1) 120deg,
+    rgba(255, 255, 255, 0.95) 240deg,
+    transparent 360deg
+  );
+  filter: blur(1.5px);
+  animation: accretionSpinCW 2.2s infinite linear;
+  mask: radial-gradient(circle, transparent 40%, black 50%);
+  -webkit-mask: radial-gradient(circle, transparent 40%, black 50%);
+}
+
+@keyframes accretionSpinCW {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 3. Counter-Rotating Inner Plasma Ring (Counter-Clockwise) */
+.blackhole-accretion-disk-reverse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px dotted rgba(255, 255, 255, 0.7);
+  animation: accretionSpinCCW 3.6s infinite linear;
+}
+
+@keyframes accretionSpinCCW {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* 4. Glowing Photon Ring (Edge of No Return) */
+.blackhole-photon-ring {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 16px #ffffff, inset 0 0 8px #ffffff;
+  animation: photonPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes photonPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.12); opacity: 1; box-shadow: 0 0 22px #ffffff; }
+}
+
+/* 5. Deep Event Horizon (Pure Obsidian Shadow) */
+.blackhole-event-horizon {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #000000;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 1), 0 0 12px rgba(0, 0, 0, 0.95);
+}
+
+/* 6. Infinite Singularity Center Point */
+.blackhole-singularity-core {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 6px #ffffff;
+}
+
+/* 7. Relativistic Jets / Axis Ticks */
+.blackhole-axis-ray {
+  position: absolute;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  pointer-events: none;
+}
+
+.blackhole-axis-ray.h-ray {
+  width: 38px;
+  height: 1px;
+}
+
+.blackhole-axis-ray.v-ray {
+  height: 38px;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+}
+
+/* Coordinate Readout */
+.crosshair-coords-readout {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  color: #d4d4d8;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
+  user-select: none;
+}
+
+/* Gravitational Lock State (Hovering Button / Interactive Elements) */
+.hero-blackhole-follower.target-locked {
+  transform: translate(-50%, -50%) scale(1.35);
+}
+
+.hero-blackhole-follower.target-locked .blackhole-photon-ring {
+  box-shadow: 0 0 28px #ffffff, inset 0 0 12px #ffffff;
+  border-color: #ffffff;
+}
+
+.hero-blackhole-follower.target-locked .blackhole-accretion-disk {
+  animation-duration: 0.75s; /* Accelerated vortex suction */
+}
+
+/* Top Corner Logo */
+.hero-corner-logo {
+  position: absolute;
+  top: 2rem;
+  left: 2.5rem;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 1.1rem;
+  user-select: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  padding: 0.55rem 1.6rem 0.55rem 0.65rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+}
+
+.hero-corner-logo:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hero-corner-logo-img {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.3);
+}
+
+.hero-corner-logo-text {
+  font-family: var(--font-display, 'Syne', sans-serif);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+}
+
+/* Left Side Team Credit Badge */
+.hero-team-badge {
+  position: absolute;
+  bottom: 2.25rem;
+  left: 2.5rem;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.35rem 0.6rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.hero-team-badge:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.hero-team-dot {
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ffffff;
+  animation: teamDotPulse 2s infinite ease-in-out;
+}
+
+@keyframes teamDotPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 14px #ffffff; }
+}
+
+.hero-team-text {
+  font-family: var(--font-display, 'Syne', sans-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #e4e4e7;
+  text-transform: uppercase;
+}
+
+/* Content Container */
+.hero-intro-content {
+  position: relative;
+  z-index: 10;
+  max-width: 1080px;
+  width: 90%;
+  margin: auto;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Main Display Typography */
+.hero-title-main {
+  font-family: var(--font-display, 'Syne', sans-serif);
+  font-size: clamp(3.8rem, 9.5vw, 7rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+  color: #ffffff;
+  margin-bottom: 3.5rem;
+  text-transform: uppercase;
+  max-width: 1200px;
+  text-shadow: 0 8px 60px rgba(255, 255, 255, 0.35);
+  background: linear-gradient(180deg, #ffffff 0%, #ffffff 40%, #e4e4e7 70%, #a1a1aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+}
+
+/* Call-to-Action Shimmer Button (Magic UI Style) */
+.hero-cta-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.btn-magic-get-started {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.15rem 3.25rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #000000;
+  background: #ffffff;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.4), 0 4px 15px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  text-decoration: none;
+  user-select: none;
+  letter-spacing: 0.02em;
+}
+
+.btn-magic-get-started::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 80%
+  );
+  transform: rotate(30deg) translateY(-100%);
+  transition: transform 0.75s ease;
+  pointer-events: none;
+}
+
+.btn-magic-get-started:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.6), 0 6px 20px rgba(0, 0, 0, 0.6);
+  background: #f4f4f5;
+}
+
+.btn-magic-get-started:hover::before {
+  transform: rotate(30deg) translateY(100%);
+}
+
+.btn-magic-get-started:active {
+  transform: scale(0.98);
+}
+
+.btn-magic-get-started svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.25s ease;
+}
+
+.btn-magic-get-started:hover svg {
+  transform: translateX(4px);
+}
+
+.btn-hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.95rem 1.85rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e4e4e7;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-hero-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #ffffff;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+/* Footer Telemetry Badge on Hero */
+.hero-footer-telemetry {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.76rem;
+  color: #71717a;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1.5rem;
+  width: 100%;
+  max-width: 600px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.hero-footer-telemetry span strong {
+  color: #a1a1aa;
+}
+
+/* Re-open Intro Hero Button in Main Header */
+.btn-reopen-intro {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-600);
+  background: var(--ink-50);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-reopen-intro:hover {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}

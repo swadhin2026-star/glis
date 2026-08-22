@@ -1,0 +1,26 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Large raw dataset archives
+dataset/
+*.zip
+*.tar.gz
+
+# IDE / Editor
+.vscode/
+.idea/
+.DS_Store
+
+# Temporary mask outputs and duplicate weights
+models/mask_*.png
+models/*_last.pth
+*.tmp

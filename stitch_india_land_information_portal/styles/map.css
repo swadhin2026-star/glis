@@ -1,0 +1,408 @@
+/* ==========================================================================
+   MAP EXPLORER GIS VIEW STYLES (Screen 3)
+   Pure Black & White Theme + High-Reliability Rendering
+   ========================================================================== */
+
+.map-view-container {
+  display: flex;
+  height: calc(100vh - 70px);
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* Map Left Control Panel */
+.map-sidebar {
+  width: 360px;
+  background: #ffffff;
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  z-index: 500;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-base);
+}
+
+.map-sidebar.collapsed {
+  transform: translateX(-100%);
+  position: absolute;
+  height: 100%;
+}
+
+.map-sidebar-header {
+  padding: 1.15rem 1.35rem;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.map-sidebar-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #000000;
+}
+
+.map-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.15rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.map-control-group h4 {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--ink-500);
+  letter-spacing: 0.06em;
+  margin-bottom: 0.65rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Base Map Selector Grid */
+.base-map-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.45rem;
+}
+
+.base-map-btn {
+  background: var(--ink-50);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-800);
+  transition: var(--transition-fast);
+}
+
+.base-map-btn:hover {
+  border-color: #000000;
+  background: #ffffff;
+}
+
+.base-map-btn.active {
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* GIS Layer Toggles */
+.layer-toggle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.layer-toggle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.8rem;
+  background: var(--ink-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  transition: var(--transition-fast);
+}
+
+.layer-toggle-item:hover {
+  background: #ffffff;
+  border-color: var(--ink-400);
+}
+
+.layer-label {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #000000;
+  cursor: pointer;
+}
+
+.layer-color-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid #000000;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 18px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--ink-300);
+  transition: .25s;
+  border-radius: 20px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .25s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #000000;
+}
+
+input:checked + .slider:before {
+  transform: translateX(16px);
+}
+
+/* Layer Opacity Slider */
+.layer-opacity-control {
+  margin-top: 0.75rem;
+}
+
+.layer-opacity-control label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-500);
+  margin-bottom: 0.3rem;
+}
+
+.range-slider {
+  width: 100%;
+  accent-color: #000000;
+}
+
+/* Leaflet Canvas Area */
+.map-canvas-wrapper {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: #f4f4f5;
+}
+
+#leafletMap {
+  height: 100%;
+  width: 100%;
+  min-height: 500px;
+  z-index: 100;
+}
+
+/* Floating Toolbar */
+.map-floating-toolbar {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 400;
+  background: #ffffff;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.gis-tool-btn {
+  background: transparent;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-800);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  position: relative;
+}
+
+.gis-tool-btn:hover {
+  background: var(--ink-100);
+  color: #000000;
+}
+
+.gis-tool-btn.active {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* Floating Real-Time Drawing HUD Card */
+.map-drawing-hud-card {
+  position: absolute;
+  top: 4.5rem;
+  right: 1.25rem;
+  z-index: 400;
+  background: #ffffff;
+  padding: 1rem 1.15rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 2px solid #000000;
+  width: 270px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Bottom Coordinates HUD */
+.map-hud-coordinates {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 1.25rem;
+  z-index: 400;
+  background: #000000;
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid #27272a;
+}
+
+.hud-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.hud-item span {
+  color: var(--ink-400);
+  font-size: 0.68rem;
+}
+
+/* Legend Drawer */
+.map-legend-drawer {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 400;
+  background: #ffffff;
+  padding: 0.9rem 1.15rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-strong);
+  max-width: 270px;
+}
+
+.map-legend-drawer h4 {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+
+.legend-scale-bar {
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, #000000 0%, #3f3f46 25%, #71717a 50%, #a1a1aa 75%, #e4e4e7 100%);
+  margin-bottom: 0.3rem;
+  border: 1px solid #000000;
+}
+
+.legend-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--ink-600);
+  font-weight: 700;
+}
+
+/* Custom Pin and Leaflet Tooltip */
+.custom-state-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.state-pin-marker {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.8rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.custom-gis-popup .leaflet-popup-content-wrapper {
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  padding: 0;
+  border: 2px solid #000000;
+}
+
+.gis-popup-content {
+  padding: 1rem 1.15rem;
+}
+
+.gis-popup-content h4 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #000000;
+  margin: 0.35rem 0;
+}
+
+.gis-popup-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  margin: 0.55rem 0;
+}
+
+.gis-popup-stats div span {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--ink-500);
+}
+
+.gis-popup-stats div strong {
+  color: #000000;
+}

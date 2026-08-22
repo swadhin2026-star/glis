@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>India Land Information Portal | National GIS & Land Governance Cockpit</title>
+  <meta name="description"
+    content="A comprehensive geospatial cockpit for India's 28 states and 8 union territories, integrating satellite Earth observation, cadastral land governance, infrastructure site suitability, urban zoning, environmental monitoring, and 32 curated GIS datasets.">
+
+  <link rel="icon" type="image/png" href="assets/logo.png">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Application Stylesheets (Separated & Modular Monochrome) -->
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/dashboard.css">
+  <link rel="stylesheet" href="styles/map.css">
+  <link rel="stylesheet" href="styles/modules.css">
+  <link rel="stylesheet" href="styles/hero-intro.css">
+</head>
+
+<body>
+
+  <!-- ==========================================================================
+       FULLSCREEN HERO WELCOME INTRO SCREEN
+       ========================================================================== -->
+  <div id="heroIntroOverlay">
+    <canvas id="heroGalaxyCanvas" class="hero-bg-galaxy-canvas"></canvas>
+    <canvas id="heroGlobeCanvas" class="hero-bg-canvas"></canvas>
+    <div class="hero-radial-glow"></div>
+    <div class="hero-retro-grid"></div>
+
+    <!-- HUD Tactical Corner Crosshairs -->
+    <div class="hero-corner-crosshair top-left"></div>
+    <div class="hero-corner-crosshair top-right"></div>
+    <div class="hero-corner-crosshair bottom-left"></div>
+    <div class="hero-corner-crosshair bottom-right"></div>
+
+
+
+    <!-- Top Corner Logo -->
+    <div class="hero-corner-logo">
+      <img src="assets/logo.png" alt="GLIS Logo" class="hero-corner-logo-img">
+      <span class="hero-corner-logo-text">GLIS INDIA</span>
+    </div>
+
+    <!-- Left Side Team Credit Badge -->
+    <div class="hero-team-badge left-side">
+      <span class="hero-team-dot"></span>
+      <span class="hero-team-text">MADE BY TEAM TERRAIN TITANS</span>
+    </div>
+
+    <div class="hero-intro-content">
+      <!-- Main Title -->
+      <h1 class="hero-title-main">
+        PROJECT GLIS
+      </h1>
+
+      <!-- Action Button -->
+      <div class="hero-cta-actions">
+        <button id="btnHeroGetStarted" class="btn-magic-get-started" onclick="window.app.dismissHeroIntro()">
+          <span>get started</span>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-container">
+
+    <!-- ==========================================================================
+         TOP HEADER & GLOBAL NAVIGATION
+         ========================================================================== -->
+    <header class="main-header">
+      <div class="brand-section" onclick="window.app.switchScreen('main_dashboard')">
+        <div class="brand-badge-icon" title="GLIS - Geographic Land Information System">
+          <img src="assets/logo.png" alt="GLIS Logo" class="brand-logo-img">
+        </div>
+        <div class="brand-text">
+          <div class="brand-title-row">
+            <span class="brand-main-title">GLIS</span>
+            <span class="brand-country-badge">INDIA</span>
+          </div>
+          <span class="brand-subtitle">Land Information Portal</span>
+        </div>
+      </div>
+
+      <!-- Navigation Module Tabs -->
+      <nav class="nav-modules">
+        <button class="nav-tab-btn active" data-screen="main_dashboard">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          Dashboard
+        </button>
+        <button class="nav-tab-btn" data-screen="map_explorer">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
+          Map GIS
+        </button>
+        <button class="nav-tab-btn" data-screen="site_suitability">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          Suitability
+        </button>
+        <button class="nav-tab-btn" data-screen="urban_planning">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          Urban & FAR
+        </button>
+        <button class="nav-tab-btn" data-screen="land_governance">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Land Records
+        </button>
+        <button class="nav-tab-btn" data-screen="environmental_monitoring">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+          </svg>
+          Environment
+        </button>
+        <button class="nav-tab-btn" data-screen="ai_satellite_ml">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          AI Spatial ML
+        </button>
+        <button class="nav-tab-btn" data-screen="socio_economic">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Socio-Eco
+        </button>
+        <button class="nav-tab-btn" data-screen="glis_platform">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          Resources
+        </button>
+        <button class="nav-tab-btn" data-screen="admin_management">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Admin
+        </button>
+      </nav>
+
+      <!-- Global Actions -->
+      <div class="header-actions">
+        <div id="aiHeaderTelemetry" class="ai-header-badge" onclick="window.app.switchScreen('ai_satellite_ml')" title="Click to open AI Spatial ML Studio">
+          <span class="pulse-dot"></span>
+          <span id="aiHeaderStatusText">AI GPU (RTX A2000)</span>
+        </div>
+        <div class="global-search-trigger" onclick="window.app.openSearchModal()">
+          <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span>Search State / Dataset...</span>
+        </div>
+        <button class="btn-primary" onclick="window.app.switchScreen('report_builder')">
+          <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Export Dossier
+        </button>
+
+      </div>
+    </header>
+
+    <!-- Main Dynamic Content Views Container -->
+    <main class="main-content">
+
+      <!-- ==========================================================================
+           SCREEN 1: MAIN DASHBOARD OVERVIEW
+           ========================================================================== -->
+      <section id="screen_main_dashboard" class="screen-view active-screen">
+
+        <!-- Hero Section -->
+        <div class="glis-hero">
+          <div class="glis-hero-container">
+            <div class="glis-hero-content">
+              <div class="hero-pill-badge">
+                <span>GLIS Cockpit 2026</span>
+              </div>
+              <h1>Explore India's States <br><span>Through Spatial Data</span></h1>
+              <p>Discover demographic metrics, official land classifications, administrative boundaries, cadastral
+                governance, and 32 verified GIS datasets across all Indian States and Union Territories.</p>
+
+              <div class="hero-search-wrapper">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" id="heroSearchInput"
+                  placeholder="Search state (e.g. Gujarat, Maharashtra, Karnataka)..." autocomplete="off">
+                <button class="btn-primary" onclick="window.app.performHeroSearch()">Search</button>
+              </div>
+
+              <div class="quick-state-chips">
+                <span>Quick Select:</span>
+                <button class="state-chip-btn" onclick="window.app.selectState('gujarat')">Gujarat</button>
+                <button class="state-chip-btn" onclick="window.app.selectState('maharashtra')">Maharashtra</button>
+                <button class="state-chip-btn" onclick="window.app.selectState('karnataka')">Karnataka</button>
+                <button class="state-chip-btn" onclick="window.app.selectState('tamil nadu')">Tamil Nadu</button>
+                <button class="state-chip-btn" onclick="window.app.selectState('uttar pradesh')">Uttar Pradesh</button>
+                <button class="state-chip-btn" onclick="window.app.selectState('andhra pradesh')">Andhra
+                  Pradesh</button>
+              </div>
+            </div>
+
+            <!-- Hero Right Multi-Tile GIS Overview -->
+            <div class="hero-gis-card">
+              <div class="hero-gis-header">
+                <div>
+                  <h4 style="font-family:var(--font-display); font-size:1.15rem; color:#000000; font-weight:800;">
+                    Spatial Map & Tile Pipeline</h4>
+                  <p style="font-size:0.75rem; color:var(--ink-500);">Esri Basemaps • Sentinel-2 Tiles • DILRMP Cadastre</p>
+                </div>
+                <div class="gis-radar-pill">
+                  <div class="radar-dot"></div>
+                  <span>MULTI-TILE GIS</span>
+                </div>
+              </div>
+
+              <div class="hero-mini-stats">
+                <div class="mini-stat-box">
+                  <h4>Total Land Area</h4>
+                  <p>3.287M km²</p>
+                </div>
+                <div class="mini-stat-box">
+                  <h4>States & UTs</h4>
+                  <p>36 Entities</p>
+                </div>
+                <div class="mini-stat-box">
+                  <h4>Total Districts</h4>
+                  <p>780+ Districts</p>
+                </div>
+                <div class="mini-stat-box">
+                  <h4>Curated Datasets</h4>
+                  <p>32 Sources</p>
+                </div>
+              </div>
+
+              <div
+                style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-subtle); padding-top:1rem;">
+                <span style="font-size:0.8rem; color:var(--ink-500);">Spatial Datum: <strong>WGS 84 /
+                    EPSG:4326</strong></span>
+                <button class="btn-secondary" style="padding:0.4rem 0.85rem; font-size:0.8rem;"
+                  onclick="window.app.switchScreen('map_explorer')">Open Full Map GIS</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- National Summary Metric Strip -->
+        <div class="national-metric-strip">
+          <div class="metric-strip-card">
+            <div class="metric-item">
+              <div class="metric-icon-bubble">👥</div>
+              <div class="metric-info">
+                <h3>1.442 Billion</h3>
+                <p>National Population (Census / UN DESA 2026)</p>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-icon-bubble">🌲</div>
+              <div class="metric-info">
+                <h3>24.62% <span style="font-size:0.82rem; font-weight:600; color:#71717a;">(8.09L km²)</span></h3>
+                <p>Forest &amp; Tree Canopy Cover (FSI - ISFR)</p>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-icon-bubble">🌾</div>
+              <div class="metric-info">
+                <h3>45.6% <span style="font-size:0.82rem; font-weight:600; color:#71717a;">(139.4M Ha)</span></h3>
+                <p>Net Agricultural Sown Area (MoA&amp;FW / DES)</p>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-icon-bubble">🏛️</div>
+              <div class="metric-info">
+                <h3>94.86% <span style="font-size:0.82rem; font-weight:600; color:#71717a;">(6.24L Villages)</span></h3>
+                <p>Cadastral RoRs Digitized (DILRMP MIS)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main State Profile Section -->
+        <div class="dashboard-main-section">
+          <div class="section-header-row">
+            <div class="section-title-wrap">
+              <span>STATE PROFILE & CADASTRE</span>
+              <h2 id="profileStateName">Gujarat</h2>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:center;">
+              <label style="font-size:0.85rem; font-weight:700; color:var(--ink-700);">Select State:</label>
+              <select class="state-selector-dropdown"></select>
+            </div>
+          </div>
+
+          <!-- State Overview Card & District Drawer -->
+          <div class="state-overview-grid">
+            <div class="state-detail-card">
+              <div class="state-title-banner">
+                <div>
+                  <p id="profileStateDesc"
+                    style="color:var(--ink-600); font-size:1rem; line-height:1.6; max-width:650px;">A leading industrial
+                    and economic engine on India's western coast with the country's longest coastline...</p>
+                </div>
+                <div class="state-badge-group">
+                  <span class="badge-black badge-md">Verified Record</span>
+                </div>
+              </div>
+
+              <!-- State Metric Matrix -->
+              <div class="state-stat-matrix">
+                <div class="stat-matrix-cell">
+                  <span>Population</span>
+                  <h4 id="statPopulation">6.04 Crore</h4>
+                </div>
+                <div class="stat-matrix-cell">
+                  <span>Geographical Area</span>
+                  <h4 id="statArea">196,024 km²</h4>
+                </div>
+                <div class="stat-matrix-cell">
+                  <span>Districts</span>
+                  <h4 id="statDistricts">33</h4>
+                </div>
+                <div class="stat-matrix-cell">
+                  <span>Capital City</span>
+                  <h4 id="statCapital">Gandhinagar</h4>
+                </div>
+              </div>
+
+              <!-- Land Classification Composition -->
+              <div class="land-use-container">
+                <div class="land-use-header">
+                  <h4>Land Classification (ISRO Bhuvan / State DES)</h4>
+                  <span style="font-size:0.8rem; color:var(--ink-500);">Year: <strong>2024-25</strong></span>
+                </div>
+
+                <div class="land-use-bar-stack">
+                  <div id="barAgri" class="bar-segment bar-agri" style="width:53%;" title="Agriculture"></div>
+                  <div id="barForest" class="bar-segment bar-forest" style="width:11%;" title="Forest"></div>
+                  <div id="barBuilt" class="bar-segment bar-built" style="width:6%;" title="Built-up"></div>
+                  <div id="barWater" class="bar-segment bar-water" style="width:3%;" title="Water Bodies"></div>
+                  <div id="barBarren" class="bar-segment bar-barren" style="width:27%;" title="Barren / Wasteland">
+                  </div>
+                </div>
+
+                <div class="land-use-legend-grid">
+                  <div class="legend-item">
+                    <div class="legend-color-dot" style="background:#000000;"></div>
+                    <span>Agriculture</span>
+                    <strong id="valAgri">53%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-color-dot" style="background:#3f3f46;"></div>
+                    <span>Forest</span>
+                    <strong id="valForest">11%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-color-dot" style="background:#71717a;"></div>
+                    <span>Built-up</span>
+                    <strong id="valBuilt">6%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-color-dot" style="background:#a1a1aa;"></div>
+                    <span>Water Bodies</span>
+                    <strong id="valWater">3%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-color-dot" style="background:#d4d4d8;"></div>
+                    <span>Barren / Wasteland</span>
+                    <strong id="valBarren">27%</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- District Explorer Card -->
+            <div class="district-explorer-card">
+              <div class="district-header-wrap">
+                <div>
+                  <h3 style="font-family:var(--font-display); font-size:1.2rem; color:#000000; font-weight:800;">
+                    Administrative Districts</h3>
+                  <p style="font-size:0.8rem; color:var(--ink-500);">Interactive administrative units</p>
+                </div>
+                <span id="districtCountBadge" class="badge-white">33 Districts</span>
+              </div>
+
+              <input type="text" class="district-search-input" placeholder="Filter district name..." oninput="
+                const val = this.value.toLowerCase();
+                document.querySelectorAll('.district-chip').forEach(c => {
+                  c.style.display = c.textContent.toLowerCase().includes(val) ? 'inline-block' : 'none';
+                });
+              ">
+
+              <div id="districtChipsContainer" class="district-chips-container"></div>
+
+              <!-- Selected District Interactive Info Panel -->
+              <div id="districtDetailPanel" class="district-detail-panel" style="display:none;">
+                <div class="district-detail-header">
+                  <div>
+                    <span class="badge-black" id="dtDetailStateBadge" style="font-size:0.68rem;">GUJARAT</span>
+                    <h3 id="dtDetailName" style="margin:0.25rem 0 0.1rem;">Ahmedabad District</h3>
+                    <p id="dtDetailDivision" style="margin:0;">Ahmedabad Revenue Division • Sub-Divisions: 10</p>
+                  </div>
+                  <button class="district-close-btn" onclick="window.app.closeDistrictDetail()" title="Close District Card">✕</button>
+                </div>
+
+                <div class="district-stats-grid">
+                  <div class="dt-stat-box">
+                    <span>Est. Population</span>
+                    <strong id="dtStatPopulation">7.2 Lakh</strong>
+                  </div>
+                  <div class="dt-stat-box">
+                    <span>District Area</span>
+                    <strong id="dtStatArea">4,707 km²</strong>
+                  </div>
+                  <div class="dt-stat-box">
+                    <span>Agri Sown</span>
+                    <strong id="dtStatAgri">58%</strong>
+                  </div>
+                  <div class="dt-stat-box">
+                    <span>Forest Canopy</span>
+                    <strong id="dtStatForest">11%</strong>
+                  </div>
+                </div>
+
+                <div class="district-actions-row">
+                  <button class="btn-primary" onclick="window.app.exploreDistrictOnMap()">
+                    <svg style="width:13px; height:13px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    Focus Map
+                  </button>
+                  <button class="btn-secondary" onclick="window.app.openDistrictRoR()">
+                    <svg style="width:13px; height:13px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    RoR 7/12
+                  </button>
+                  <button class="btn-secondary" onclick="window.app.openDistrictAi()">
+                    <svg style="width:13px; height:13px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    AI Satellite
+                  </button>
+                </div>
+              </div>
+
+              <div
+                style="margin-top:auto; padding-top:1.25rem; border-top:1px solid var(--border-subtle); display:flex; gap:0.75rem;">
+                <button class="btn-primary" style="flex:1;" onclick="window.app.switchScreen('map_explorer')">Open on
+                  Map GIS</button>
+                <button class="btn-secondary" onclick="window.app.switchScreen('land_governance')">View RoR
+                  Records</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 2: GLIS PLATFORM LANDING PAGE & RESOURCE CATALOG (32 Datasets)
+           ========================================================================== -->
+      <section id="screen_glis_platform" class="screen-view">
+        <div class="module-page-container">
+          <div class="module-header-banner">
+            <div class="module-header-left">
+              <span>GEOGRAPHIC LAND INFORMATION SYSTEM (GLIS)</span>
+              <h2>32 Curated Indian GIS & Satellite Resources</h2>
+              <p>An authoritative resource directory categorized across Satellite Earth Observation, Topography &
+                Elevation, Demographics, Cadastral Governance, and Geospatial AI Modeling Tools.</p>
+            </div>
+            <div>
+              <button class="btn-primary" onclick="window.app.adminEngine.exportManifestText()">
+                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Manifest
+              </button>
+            </div>
+          </div>
+
+          <!-- Category Filter Tabs -->
+          <div id="resourceCategoryTabs" class="resource-category-tabs"></div>
+
+          <!-- 32 Resource Cards Grid -->
+          <div id="resourceCardsGrid" class="resource-grid"></div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 3: MAP EXPLORER GIS VIEW
+           ========================================================================== -->
+      <section id="screen_map_explorer" class="screen-view">
+        <div class="map-view-container">
+
+          <!-- Left Sidebar Controls -->
+          <aside class="map-sidebar">
+            <div class="map-sidebar-header">
+              <h3>GIS Layers & Tools</h3>
+              <button class="btn-secondary" style="padding:0.3rem 0.65rem; font-size:0.75rem;"
+                onclick="window.app.mapEngine.resetView()">Reset India</button>
+            </div>
+
+            <div class="map-sidebar-body">
+              <!-- Select State to Jump -->
+              <div class="map-control-group">
+                <h4>Focus State</h4>
+                <select class="state-selector-dropdown form-control"
+                  onchange="window.app.selectState(this.value)"></select>
+              </div>
+
+              <!-- Base Maps -->
+              <div class="map-control-group">
+                <h4>Base Imagery</h4>
+                <div class="base-map-grid">
+                  <button class="base-map-btn active" data-layer="positron"
+                    onclick="window.app.mapEngine.setBaseLayer('positron')">
+                    <span>⚪</span> Carto Light
+                  </button>
+                  <button class="base-map-btn" data-layer="satellite"
+                    onclick="window.app.mapEngine.setBaseLayer('satellite')">
+                    <span>🛰️</span> Esri Satellite
+                  </button>
+                  <button class="base-map-btn" data-layer="osm" onclick="window.app.mapEngine.setBaseLayer('osm')">
+                    <span>🗺️</span> OpenStreetMap
+                  </button>
+                  <button class="base-map-btn" data-layer="dark" onclick="window.app.mapEngine.setBaseLayer('dark')">
+                    <span>⚫</span> Carto Dark
+                  </button>
+                  <button class="base-map-btn" data-layer="topo" onclick="window.app.mapEngine.setBaseLayer('topo')">
+                    <span>⛰️</span> OpenTopoMap
+                  </button>
+                </div>
+              </div>
+
+              <!-- Thematic GIS Overlays -->
+              <div class="map-control-group">
+                <h4>Thematic Overlays</h4>
+                <div class="layer-toggle-list">
+                  <div class="layer-toggle-item">
+                    <label class="layer-label">
+                      <div class="layer-color-indicator" style="background:#000000;"></div>
+                      <span>State Boundary Focus</span>
+                    </label>
+                    <label class="switch">
+                      <input type="checkbox" checked
+                        onchange="window.app.mapEngine.toggleOverlay('boundaries', this.checked)">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="layer-toggle-item">
+                    <label class="layer-label">
+                      <div class="layer-color-indicator" style="background:#18181b;"></div>
+                      <span>LULC Land Classification</span>
+                    </label>
+                    <label class="switch">
+                      <input type="checkbox" onchange="window.app.mapEngine.toggleOverlay('lulc', this.checked)">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="layer-toggle-item">
+                    <label class="layer-label">
+                      <div class="layer-color-indicator" style="background:#3f3f46;"></div>
+                      <span>Sentinel-2 NDVI Canopy</span>
+                    </label>
+                    <label class="switch">
+                      <input type="checkbox" onchange="window.app.mapEngine.toggleOverlay('ndvi', this.checked)">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="layer-toggle-item">
+                    <label class="layer-label">
+                      <div class="layer-color-indicator" style="background:#71717a;"></div>
+                      <span>VIIRS Nighttime Radiance</span>
+                    </label>
+                    <label class="switch">
+                      <input type="checkbox" onchange="window.app.mapEngine.toggleOverlay('viirs', this.checked)">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Layer Opacity -->
+                <div class="layer-opacity-control">
+                  <label><span>Layer Opacity</span><span id="opacityLabel">75%</span></label>
+                  <input type="range" min="0.1" max="1" step="0.05" value="0.75" class="range-slider" oninput="
+                    document.getElementById('opacityLabel').textContent = Math.round(this.value * 100) + '%';
+                    window.app.mapEngine.setOverlayOpacity(this.value);
+                  ">
+                </div>
+              </div>
+
+              <!-- Spatial Drawing & Measurement Tools -->
+              <div class="map-control-group">
+                <h4>Cadastral Boundary Tools</h4>
+                <div style="display:flex; flex-direction:column; gap:0.45rem;">
+
+                  <div style="display:flex; gap:0.45rem;">
+                    <button class="btn-secondary" style="flex:1; font-size:0.75rem;"
+                      onclick="window.app.mapEngine.toggleMeasureTool('distance')">📏 Distance</button>
+                    <button class="btn-secondary" style="flex:1; font-size:0.75rem;"
+                      onclick="window.app.mapEngine.toggleMeasureTool('area')">📐 Area</button>
+                  </div>
+                  <div style="display:flex; gap:0.45rem;">
+                    <button class="btn-secondary" style="flex:1; font-size:0.75rem;"
+                      onclick="window.app.mapEngine.exportAllDrawnGeoJSON()">📤 Export GeoJSON</button>
+                    <button class="btn-secondary" style="flex:1; font-size:0.75rem;"
+                      onclick="document.getElementById('inputMapGeoJsonFile').click()">📥 Import GeoJSON</button>
+                  </div>
+                  <button class="btn-secondary" style="font-size:0.75rem; color:#ef4444;"
+                    onclick="window.app.mapEngine.clearAllDrawnFeatures()">🗑️ Clear Drawings</button>
+                </div>
+                <input type="file" id="inputMapGeoJsonFile" accept=".geojson,.json" style="display:none;"
+                  onchange="window.app.mapEngine.importGeoJSONFile(this.files[0])">
+              </div>
+            </div>
+          </aside>
+
+          <!-- Leaflet Map Canvas -->
+          <div class="map-canvas-wrapper">
+            <div id="leafletMap"></div>
+
+            <!-- Floating Top Right Boundary & GIS Toolbar -->
+            <div class="map-floating-toolbar">
+
+              <button class="gis-tool-btn" data-tool="distance" title="Measure Distance"
+                onclick="window.app.mapEngine.toggleMeasureTool('distance')">
+                <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </button>
+              <button class="gis-tool-btn" data-tool="area" title="Measure Polygon Area"
+                onclick="window.app.mapEngine.toggleMeasureTool('area')">
+                <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5z" />
+                </svg>
+              </button>
+              <button class="gis-tool-btn" title="Import Vector GeoJSON"
+                onclick="document.getElementById('inputMapGeoJsonFile').click()">
+                <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+              </button>
+              <button class="gis-tool-btn" title="Export All Drawn Boundaries as GeoJSON"
+                onclick="window.app.mapEngine.exportAllDrawnGeoJSON()">
+                <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </button>
+              <button class="gis-tool-btn" title="Clear Drawings"
+                onclick="window.app.mapEngine.clearAllDrawnFeatures()">
+                <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Bottom Left Coordinate & Elevation HUD -->
+            <div class="map-hud-coordinates">
+              <div class="hud-item"><span>LAT:</span> <strong id="hudLat">22.5937° N</strong></div>
+              <div class="hud-item"><span>LNG:</span> <strong id="hudLng">78.9629° E</strong></div>
+              <div class="hud-item"><span>ELEV:</span> <strong id="hudElev">450 m</strong></div>
+              <div class="hud-item"><span>CRS:</span> <strong>EPSG:4326</strong></div>
+            </div>
+
+            <!-- Bottom Right Map Legend -->
+            <div class="map-legend-drawer">
+              <h4>Classification Legend</h4>
+              <div class="legend-scale-bar"></div>
+              <div class="legend-scale-labels">
+                <span>0.0 (Barren)</span>
+                <span>0.5 (Agri)</span>
+                <span>1.0 (Dense Forest)</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 4: INFRASTRUCTURE SITE SUITABILITY
+           ========================================================================== -->
+      <section id="screen_site_suitability" class="screen-view">
+        <div class="module-page-container">
+          <div class="module-header-banner">
+            <div class="module-header-left">
+              <span>MULTI-CRITERIA EVALUATION (MCE) ENGINE</span>
+              <h2>Infrastructure Site Suitability Modeling</h2>
+              <p>Analyze topographic slope, road proximity, grid transmission accessibility, and environmental buffer
+                zones to identify optimal land parcels for mega projects.</p>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:center;">
+              <select class="state-selector-dropdown"></select>
+            </div>
+          </div>
+
+          <div class="module-grid-2col">
+            <!-- Left Criteria Sliders -->
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Criteria Weight Configuration</h3>
+                <span class="badge-white">MCE Analytical Hierarchy</span>
+              </div>
+
+              <div class="criteria-slider-group">
+                <div class="criteria-slider-item">
+                  <div class="criteria-label-row">
+                    <span>1. Maximum Topographic Slope (&lt; 5%)</span>
+                    <span id="lblSlope"><strong>20%</strong></span>
+                  </div>
+                  <input type="range" id="sliderSlope" min="5" max="40" value="20" class="range-slider"
+                    oninput="window.app.recalculateSuitability()">
+                </div>
+
+                <div class="criteria-slider-item">
+                  <div class="criteria-label-row">
+                    <span>2. Highway & Rail Logistics Proximity (&lt; 5km)</span>
+                    <span id="lblRoad"><strong>25%</strong></span>
+                  </div>
+                  <input type="range" id="sliderRoad" min="5" max="40" value="25" class="range-slider"
+                    oninput="window.app.recalculateSuitability()">
+                </div>
+
+                <div class="criteria-slider-item">
+                  <div class="criteria-label-row">
+                    <span>3. Distance from Protected Water Bodies (&gt; 500m)</span>
+                    <span id="lblWater"><strong>15%</strong></span>
+                  </div>
+                  <input type="range" id="sliderWater" min="5" max="40" value="15" class="range-slider"
+                    oninput="window.app.recalculateSuitability()">
+                </div>
+
+                <div class="criteria-slider-item">
+                  <div class="criteria-label-row">
+                    <span>4. High-Voltage Power Grid Access (&lt; 10km)</span>
+                    <span id="lblGrid"><strong>20%</strong></span>
+                  </div>
+                  <input type="range" id="sliderGrid" min="5" max="40" value="20" class="range-slider"
+                    oninput="window.app.recalculateSuitability()">
+                </div>
+
+                <div class="criteria-slider-item">
+                  <div class="criteria-label-row">
+                    <span>5. Urban Settlement Buffer (&gt; 2km)</span>
+                    <span id="lblSettlement"><strong>10%</strong></span>
+                  </div>
+                  <input type="range" id="sliderSettlement" min="5" max="40" value="10" class="range-slider"
+                    oninput="window.app.recalculateSuitability()">
+                </div>
+
+                <div class="criteria-slider-item">
+                  <div class="criteria-label-row">
+                    <span>6. Forest & Eco-Sensitive Zone Buffer</span>
+                    <span id="lblEco"><strong>10%</strong></span>
+                  </div>
+                  <input type="range" id="sliderEco" min="5" max="40" value="10" class="range-slider"
+                    oninput="window.app.recalculateSuitability()">
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Score Gauge & Candidate Sites -->
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Composite Suitability Score</h3>
+                <span class="badge-black">Calculated Live</span>
+              </div>
+
+              <div class="suitability-score-gauge">
+                <div class="gauge-score-num-wrap">
+                  <span id="suitabilityScore" class="gauge-score-value">88</span>
+                  <span class="gauge-score-max">/ 100</span>
+                </div>
+                <div id="suitabilityCategory" class="gauge-score-label badge-black">Highly Suitable (Prime Location)</div>
+              </div>
+
+              <p id="suitabilityRecommendation"
+                style="font-size:0.85rem; color:var(--ink-600); line-height:1.6; margin-bottom:1.5rem;">Target terrain
+                provides optimal wasteland parcels, low topological variance, and proximity to the state grid
+                transmission corridor.</p>
+
+              <h4 style="font-size:0.95rem; font-weight:800; color:#000000; margin-bottom:0.5rem;">Top Candidate Parcels
+                by District</h4>
+              <table class="suitability-ranked-table">
+                <thead>
+                  <tr>
+                    <th>District</th>
+                    <th>Parcel</th>
+                    <th>Slope</th>
+                    <th>Grid Dist</th>
+                    <th>Score</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="suitabilityTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 5: URBAN PLANNING & FAR ZONING
+           ========================================================================== -->
+      <section id="screen_urban_planning" class="screen-view">
+        <div class="module-page-container">
+          <div class="module-header-banner">
+            <div class="module-header-left">
+              <span>MUNICIPAL MASTER PLAN & DEVELOPMENT CONTROL</span>
+              <h2>Urban Planning & FAR/FSI Calculator</h2>
+              <p>Compute Floor Area Ratio (FAR), permissible built-up density, maximum height restrictions, and monitor
+                satellite-detected urban encroachments.</p>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:center;">
+              <select class="state-selector-dropdown"></select>
+            </div>
+          </div>
+
+          <div class="module-grid-2col">
+            <!-- FAR Calculator Box -->
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>FAR / FSI Permissible Space Calculator</h3>
+                <span class="badge-white">DCR Standards</span>
+              </div>
+
+              <div class="far-calculator-box">
+                <div class="form-input-group">
+                  <label>Plot Area (Square Meters):</label>
+                  <input type="number" id="inputPlotArea" class="form-control" value="2000"
+                    oninput="window.app.calculateFARForm()">
+                </div>
+
+                <div class="form-input-group">
+                  <label>Abutting Road Width (Meters):</label>
+                  <input type="number" id="inputRoadWidth" class="form-control" value="24"
+                    oninput="window.app.calculateFARForm()">
+                </div>
+
+                <div class="form-input-group">
+                  <label>Master Plan Land Use Zone:</label>
+                  <select id="selectZoning" class="form-control" onchange="window.app.calculateFARForm()">
+                    <option value="residential_high">Residential (R-2 High Density Group Housing)</option>
+                    <option value="residential_low">Residential (R-1 Low Density Plotted)</option>
+                    <option value="commercial_cbd">Commercial Central Business District (C-1)</option>
+                    <option value="industrial_light">Industrial & Logistics Park (I-1)</option>
+                    <option value="mixed_use">Mixed-Use Transit-Oriented Development (TOD)</option>
+                    <option value="green_belt">Eco-Sensitive Green Buffer Zone (GB)</option>
+                  </select>
+                </div>
+
+                <div class="form-input-group">
+                  <label>Purchased Premium FAR / TDR (Transferable Development Rights):</label>
+                  <input type="number" id="inputPremiumFAR" class="form-control" step="0.25" value="0.5"
+                    oninput="window.app.calculateFARForm()">
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem;">
+                <div class="far-result-badge">
+                  <div>
+                    <h4>Effective FAR</h4>
+                  </div>
+                  <span id="resultEffectiveFAR">3.80</span>
+                </div>
+                <div class="far-result-badge">
+                  <div>
+                    <h4>Permissible Built-Up</h4>
+                  </div>
+                  <span id="resultBuiltUpArea" style="font-size:1.15rem;">7,600 sqm</span>
+                </div>
+                <div class="far-result-badge">
+                  <div>
+                    <h4>Ground Coverage</h4>
+                  </div>
+                  <span id="resultCoverageArea" style="font-size:1.05rem;">700 sqm (35%)</span>
+                </div>
+                <div class="far-result-badge">
+                  <div>
+                    <h4>Estimated Height</h4>
+                  </div>
+                  <span id="resultMaxHeight" style="font-size:1.15rem;">36.0 m</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Encroachment Radar Alerts -->
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Satellite Encroachment Radar Alerts</h3>
+                <span class="badge-black">Change Detection</span>
+              </div>
+              <p style="font-size:0.85rem; color:var(--ink-600); margin-bottom:1rem;">Automated thermal and spectral
+                index divergence detecting unauthorized construction within green belts, right-of-ways, and lake beds.
+              </p>
+
+              <div id="encroachmentAlertsContainer"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 6: LAND GOVERNANCE & CADASTRAL RECORDS
+           ========================================================================== -->
+      <section id="screen_land_governance" class="screen-view">
+        <div class="module-page-container">
+          <div class="module-header-banner">
+            <div class="module-header-left">
+              <span>DIGITAL INDIA LAND RECORDS MODERNIZATION (DILRMP)</span>
+              <h2>Land Governance & Cadastral Title Portal</h2>
+              <p>Search Khasra / Survey numbers, verify electronic Record of Rights (RoR / 7/12 / Pahani), trace digital
+                mutation pipelines, and inspect encumbrance status.</p>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:center;">
+              <select class="state-selector-dropdown"></select>
+            </div>
+          </div>
+
+          <!-- Cadastral Query Bar -->
+          <div class="module-card" style="margin-bottom:2rem;">
+            <div class="cadastral-search-grid">
+              <div class="form-input-group" style="margin-bottom:0;">
+                <label>Survey / Khasra / Plot Number:</label>
+                <input type="text" id="inputCadastralQuery" class="form-control" value="104/2A"
+                  placeholder="e.g. 104/2A or 58/9B">
+              </div>
+              <div class="form-input-group" style="margin-bottom:0;">
+                <label>District / Revenue Division:</label>
+                <input type="text" id="inputCadastralDistrict" list="cadastralDistrictList" class="form-control"
+                  placeholder="Enter or select District (e.g. Ahmedabad, Pune)" autocomplete="off">
+                <datalist id="cadastralDistrictList"></datalist>
+              </div>
+              <div class="form-input-group" style="margin-bottom:0;">
+                <label>Khatauni / ULPIN Search:</label>
+                <input type="text" id="inputCadastralUlpin" class="form-control" placeholder="Optional Bhu-Aadhaar ULPIN">
+              </div>
+              <button class="btn-primary" style="height:42px;" onclick="window.app.queryCadastralParcel()">Search
+                Cadastre</button>
+            </div>
+          </div>
+
+          <div class="module-grid-2col">
+            <!-- Digital RoR Document View -->
+            <div id="rorDocumentContainer"></div>
+
+            <!-- Mutation Pipeline Tracker -->
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Digital Mutation Pipeline Status</h3>
+                <span class="badge-white">Application: MUT-2026-9041</span>
+              </div>
+
+              <p style="font-size:0.85rem; color:var(--ink-600); margin-bottom:1.5rem;">End-to-end transparent tracking
+                from citizen application to revenue court hearing and ULPIN registry update.</p>
+
+              <div class="mutation-timeline">
+                <div class="timeline-step completed">
+                  <div class="timeline-dot">✓</div>
+                  <span>Applied</span>
+                </div>
+                <div class="timeline-step completed">
+                  <div class="timeline-dot">✓</div>
+                  <span>Notice</span>
+                </div>
+                <div class="timeline-step completed">
+                  <div class="timeline-dot">✓</div>
+                  <span>Survey</span>
+                </div>
+                <div class="timeline-step active">
+                  <div class="timeline-dot">4</div>
+                  <span>Hearing</span>
+                </div>
+                <div class="timeline-step">
+                  <div class="timeline-dot">5</div>
+                  <span>Final RoR</span>
+                </div>
+              </div>
+
+              <div
+                style="background:var(--ink-50); border-radius:var(--radius-md); padding:1rem; border:1px solid var(--border-subtle); margin-top:2rem;">
+                <h4 style="font-size:0.85rem; color:#000000; margin-bottom:0.35rem; font-weight:800;">Current Step:
+                  Tahsildar Hearing & Order</h4>
+                <p style="font-size:0.8rem; color:var(--ink-600);">Scheduled on <strong>22-Aug-2026</strong> before
+                  Tahsildar Court Room 2. Objections received: <strong>0</strong>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 7: ENVIRONMENTAL MONITORING MODULE
+           ========================================================================== -->
+      <section id="screen_environmental_monitoring" class="screen-view">
+        <div class="module-page-container">
+          <div class="module-header-banner">
+            <div class="module-header-left">
+              <span>REMOTE SENSING ECOLOGICAL INTELLIGENCE</span>
+              <h2>Environmental & Wetland Monitoring</h2>
+              <p>Track Sentinel-2 multi-year NDVI vegetation canopy index, surface water body surface recession rates,
+                thermal forest fire hotspots, and soil degradation risks.</p>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:center;">
+              <select class="state-selector-dropdown"></select>
+            </div>
+          </div>
+
+          <div class="module-grid-2col">
+            <!-- NDVI Multi-Year Trend -->
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Sentinel-2 Mean NDVI Canopy Index (2020-2026)</h3>
+                <span class="badge-black">NDVI Analytics</span>
+              </div>
+
+              <table class="suitability-ranked-table">
+                <thead>
+                  <tr>
+                    <th>Year Cycle</th>
+                    <th>Mean NDVI</th>
+                    <th>Canopy Density</th>
+                    <th>Health Status</th>
+                  </tr>
+                </thead>
+                <tbody id="ndviTrendTableBody"></tbody>
+              </table>
+            </div>
+
+            <!-- Surface Water Body & Fire Hotspot Alerts -->
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Surface Water Bodies (NDWI Index)</h3>
+                <span class="badge-white">Wetland Inventory</span>
+              </div>
+              <div id="waterMetricsContainer"></div>
+
+              <div class="card-title-row" style="margin-top:2rem;">
+                <h3>Active Thermal Hotspots (VIIRS / MODIS)</h3>
+                <span class="badge-black">Live Fire Radar</span>
+              </div>
+              <div id="fireAlertsContainer"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN: AI SATELLITE ML & U-NET SEGMENTATION
+           ========================================================================== -->
+      <section id="screen_ai_satellite_ml" class="screen-view">
+        <div class="module-page-container">
+          <div class="module-header-banner">
+            <div class="module-header-left">
+              <span>MULTI-LAYER GIS MAP & RASTER • DEEP LEARNING STUDIO</span>
+              <h2>AI Land Use & Land Cover (LULC) Map Segmentation</h2>
+              <p>Real-time neural inference powered by PyTorch U-Net (ResNet-34) on your NVIDIA RTX A2000 GPU. Classify multi-layer GIS base map tiles (Esri World Imagery, OSM rasters, optical scenes) into 6 canonical LULC land categories with quantitative area analytics.</p>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:center;">
+              <span id="aiActiveModelPill" class="badge-black" style="font-family:var(--font-mono); font-size:0.75rem;">Model: unet_resnet34_lulc_best.pth</span>
+            </div>
+          </div>
+
+          <!-- AI Telemetry Grid -->
+          <div class="ai-telemetry-grid">
+            <div class="ai-telemetry-card">
+              <span>Spatial Base Layer</span>
+              <strong>Multi-Map GIS Rasters</strong>
+              <p>Esri World, OSM, CartoDB & 256x256 Tiles</p>
+            </div>
+            <div class="ai-telemetry-card">
+              <span>Hardware Acceleration</span>
+              <strong id="aiCardGpuName">NVIDIA RTX A2000</strong>
+              <p id="aiCardCudaStatus">CUDA 12.1 Enabled • GPU Inference</p>
+            </div>
+            <div class="ai-telemetry-card">
+              <span>PyTorch Architecture</span>
+              <strong>SMP U-Net (ResNet-34)</strong>
+              <p>81.96% Acc • unet_resnet34_lulc_best.pth</p>
+            </div>
+            <div class="ai-telemetry-card">
+              <span>Segmentation Classes</span>
+              <strong>6 LULC Categories</strong>
+              <p>Barren, Agri, Forest, Urban, Water, Wetland</p>
+            </div>
+          </div>
+
+          <!-- AI Interactive Studio -->
+          <div class="ai-studio-grid">
+            <!-- Left: Sample Tile Selector & Custom Upload -->
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Multi-Layer GIS Map Tile & Raster Selection</h3>
+                <span class="badge-white">Input Source</span>
+              </div>
+              <p style="font-size:0.85rem; color:var(--ink-600); margin-bottom:1rem;">Select a spatial base map raster from the GIS tile library or upload custom aerial/map imagery.</p>
+
+              <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--ink-500);">Pre-loaded GIS Map & Raster Tiles (256x256)</label>
+              <div id="aiSampleTileGallery" class="satellite-tile-gallery">
+                <div class="tile-sample-btn active" onclick="window.app.selectAiSample('data/segmentation/test_image/Test_1.jpg', this)">
+                  <img src="/data/segmentation/test_image/Test_1.jpg" alt="Tile 1">
+                  <span>Tile 1 (Wetland / Coastal)</span>
+                </div>
+                <div class="tile-sample-btn" onclick="window.app.selectAiSample('data/segmentation/test_image/Test_2.jpg', this)">
+                  <img src="/data/segmentation/test_image/Test_2.jpg" alt="Tile 2">
+                  <span>Tile 2 (Urban / Agri)</span>
+                </div>
+                <div class="tile-sample-btn" onclick="window.app.selectAiSample('data/segmentation/test_image/PHOTO-2023-04-08-11-31-19.jpg', this)">
+                  <img src="/data/segmentation/test_image/PHOTO-2023-04-08-11-31-19.jpg" alt="Tile 3">
+                  <span>Tile 3 (Dense Forest)</span>
+                </div>
+                <div class="tile-sample-btn" onclick="window.app.selectAiSample('data/segmentation/test_image/PHOTO-2023-04-08-11-32-51.jpg', this)">
+                  <img src="/data/segmentation/test_image/PHOTO-2023-04-08-11-32-51.jpg" alt="Tile 4">
+                  <span>Tile 4 (Agri Farmland)</span>
+                </div>
+              </div>
+
+              <!-- Drag and Drop Upload -->
+              <div class="ai-upload-dropzone" onclick="document.getElementById('aiCustomFileInput').click()">
+                <svg style="width:28px; height:28px; margin:0 auto 0.5rem; color:var(--ink-400);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <div style="font-weight:700; font-size:0.85rem; color:#000000;">Click or Drop Custom GIS Map Tile / Aerial Raster</div>
+                <p style="font-size:0.75rem; color:var(--ink-500); margin-top:2px;">Supports JPG, PNG, GeoTIFF, WebP (Automated multi-band RGB normalization)</p>
+                <input type="file" id="aiCustomFileInput" accept="image/*" style="display:none;" onchange="window.app.handleCustomImageUpload(event)">
+              </div>
+
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
+                <div id="aiInferenceTimeBadge" style="font-size:0.75rem; font-weight:700; color:var(--ink-600);">Ready for Neural Inference</div>
+                <button id="btnRunAiSegmentation" class="btn-primary" style="height:44px; padding:0 1.5rem;" onclick="window.app.runAiSegmentation()">
+                  <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Run PyTorch U-Net Inference
+                </button>
+              </div>
+            </div>
+
+            <!-- Right: Interactive Visualizer & Quantitative Metrics -->
+            <div class="ai-comparison-card">
+              <div class="card-title-row">
+                <h3>Neural Map Segmentation Result & Land Cover</h3>
+                <span id="aiResolutionBadge" class="badge-black">256 x 256 Px</span>
+              </div>
+
+              <!-- Side by Side / Overlay Visualizer -->
+              <div class="visualizer-stage">
+                <div class="visualizer-pane">
+                  <span class="visualizer-pane-label">Raw GIS Map Tile</span>
+                  <img id="aiRawPreviewImg" src="/data/segmentation/test_image/Test_1.jpg" alt="Raw Map Tile">
+                </div>
+                <div class="visualizer-pane" style="position:relative;">
+                  <span class="visualizer-pane-label">PyTorch LULC Mask</span>
+                  <img id="aiUnderlayImg" src="/data/segmentation/test_image/Test_1.jpg" alt="Underlay" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0;">
+                  <img id="aiMaskPreviewImg" src="/models/mask_Test_1.png" alt="Predicted Mask" style="position:absolute; top:0; left:0; width:100%; height:100%;">
+                </div>
+              </div>
+
+              <!-- Slider Controls (Opacity Blend + Confidence Threshold) -->
+              <div style="display:flex; flex-direction:column; gap:0.65rem; margin-top:1rem;">
+                <div class="opacity-slider-wrap">
+                  <span style="font-size:0.75rem; font-weight:800; color:var(--ink-700); min-width:140px;">Mask Blend Overlay:</span>
+                  <input type="range" id="aiMaskOpacitySlider" min="0" max="100" value="100" oninput="window.app.updateMaskOpacity(this.value)">
+                  <span id="aiOpacityValText" style="font-size:0.75rem; font-weight:700; font-family:var(--font-mono); width:45px; text-align:right;">100%</span>
+                </div>
+
+                <div class="opacity-slider-wrap" style="background:#f0fdf4; border:1px solid #bbf7d0;">
+                  <span style="font-size:0.75rem; font-weight:800; color:#166534; min-width:140px;">Confidence Threshold:</span>
+                  <input type="range" id="aiConfidenceSlider" min="0" max="95" value="0" step="5" oninput="window.app.updateConfidenceThreshold(this.value)">
+                  <span id="aiConfidenceValText" style="font-size:0.75rem; font-weight:700; font-family:var(--font-mono); width:45px; text-align:right; color:#166534;">0%</span>
+                </div>
+              </div>
+
+              <!-- Confidence Stats Bar -->
+              <div id="aiConfidenceStatsBar" style="display:flex; justify-content:space-between; align-items:center; background:var(--ink-50); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.6rem 0.85rem; margin-top:0.75rem; font-size:0.75rem;">
+                <div><span style="color:var(--ink-500);">Mean Confidence:</span> <strong id="aiMeanConfVal" style="color:#000000;">91.4%</strong></div>
+                <div><span style="color:var(--ink-500);">High Confidence Pixels:</span> <strong id="aiConfCoverageVal" style="color:#10b981;">100%</strong></div>
+              </div>
+
+              <!-- Quantitative Class Breakdown -->
+              <div id="aiLulcClassGrid" class="lulc-class-grid">
+                <!-- Class cards populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom: GIS Neural Tabular Model (Land Suitability & Valuation) -->
+          <div class="module-card">
+            <div class="card-title-row">
+              <div>
+                <h3>GIS Neural Valuation & Development Index Predictor</h3>
+                <p style="font-size:0.85rem; color:var(--ink-600); margin-top:2px;">Trained Multilayer Perceptron (MLP) regressor on multi-attribute GIS spatial variables.</p>
+              </div>
+              <span class="badge-white">Checkpoint: land_gis_model.pth</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr) auto; gap:1rem; align-items:flex-end; margin-top:1.25rem;">
+              <div class="form-input-group" style="margin-bottom:0;">
+                <label>Elevation (Meters MSL):</label>
+                <input type="number" id="gisElevationInput" class="form-control" value="180" min="0" max="5000">
+              </div>
+              <div class="form-input-group" style="margin-bottom:0;">
+                <label>Slope Gradient (%):</label>
+                <input type="number" id="gisSlopeInput" class="form-control" value="4.2" step="0.1">
+              </div>
+              <div class="form-input-group" style="margin-bottom:0;">
+                <label>Distance to Highway (km):</label>
+                <input type="number" id="gisRoadDistInput" class="form-control" value="1.5" step="0.1">
+              </div>
+              <div class="form-input-group" style="margin-bottom:0;">
+                <label>Mean NDVI Vegetation Index:</label>
+                <input type="number" id="gisNdviInput" class="form-control" value="0.48" step="0.01" min="-1" max="1">
+              </div>
+              <button class="btn-primary" style="height:42px;" onclick="window.app.runGISModelInference()">Predict Valuation</button>
+            </div>
+
+            <div id="gisModelResultContainer" style="margin-top:1.25rem; display:none; background:var(--ink-50); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:1rem 1.5rem; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--ink-500);">Predicted GIS Metric</span>
+                <h4 id="gisResultTargetName" style="font-size:1.1rem; color:#000000; margin-top:2px;">Land Composite Suitability Index</h4>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--ink-500);">Neural Model Output</span>
+                <div id="gisResultVal" style="font-size:1.6rem; font-weight:900; font-family:var(--font-display); color:#000000;">78.40 / 100</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 8: SOCIO-ECONOMIC ANALYSIS
+           ========================================================================== -->
+      <section id="screen_socio_economic" class="screen-view">
+        <div class="module-page-container">
+          <div class="module-header-banner">
+            <div class="module-header-left">
+              <span>DEMOGRAPHIC & ECONOMIC RADAR</span>
+              <h2>Socio-Economic & Nighttime Radiance Analysis</h2>
+              <p>Analyze WorldPop gridded density, NOAA VIIRS nocturnal luminosity, literacy indices, and urban-rural
+                economic transitions.</p>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:center;">
+              <select class="state-selector-dropdown"></select>
+            </div>
+          </div>
+
+          <div class="socio-stat-cards-row">
+            <div class="socio-stat-card">
+              <span>Population Density</span>
+              <h3 id="socioDensity">308 persons/km²</h3>
+            </div>
+            <div class="socio-stat-card">
+              <span>Urban vs Rural Split</span>
+              <h3 id="socioUrban">42.6% Urban / 57.4% Rural</h3>
+            </div>
+            <div class="socio-stat-card">
+              <span>VIIRS Nighttime Radiance</span>
+              <h3 id="socioRadiance">40.5 nW/cm²/sr</h3>
+            </div>
+            <div class="socio-stat-card">
+              <span>State GDP Contribution</span>
+              <h3 id="socioGDP">₹25.6 Lakh Cr</h3>
+            </div>
+          </div>
+
+          <div class="module-grid-2col">
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Economic Freight Corridor Growth</h3>
+                <span class="badge-black">Radiance Trend</span>
+              </div>
+              <p style="font-size:0.85rem; color:var(--ink-600); margin-bottom:1rem;">Correlation between nighttime
+                radiance and industrial production cluster expansion.</p>
+              <div
+                style="padding:1rem; background:var(--ink-50); border-radius:var(--radius-md); border:1px solid var(--border-subtle); margin-bottom:0.75rem;">
+                <strong>Dedicated Freight Corridor (DFC) Logistics Belt</strong>
+                <p style="font-size:0.8rem; color:var(--ink-600);">Radiance Growth: <strong>+14.2% YoY</strong> | High
+                  nocturnal energy output.</p>
+              </div>
+              <div
+                style="padding:1rem; background:var(--ink-50); border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+                <strong>Coastal Maritime Ports (Mundra & Kandla Corridors)</strong>
+                <p style="font-size:0.8rem; color:var(--ink-600);">Radiance Growth: <strong>+19.1% YoY</strong> | 24x7
+                  automated container handling.</p>
+              </div>
+            </div>
+
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Human Development & Connectivity Indicators</h3>
+                <span class="badge-white">Census & OGD</span>
+              </div>
+              <div
+                style="display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--ink-100);">
+                <span>Literacy Rate:</span>
+                <strong id="socioLiteracy">78.0%</strong>
+              </div>
+              <div
+                style="display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--ink-100);">
+                <span>Universal Rural Electrification:</span>
+                <strong>99.4% (Saubhagya Scheme)</strong>
+              </div>
+              <div
+                style="display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--ink-100);">
+                <span>BharatNet Optical Fiber Panchayat Connectivity:</span>
+                <strong>72.5% Completed</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:0.75rem 0;">
+                <span>Agricultural Workforce Share:</span>
+                <strong>54.2% of Total Workforce</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 9: REPORT BUILDER & INSIGHTS
+           ========================================================================== -->
+      <section id="screen_report_builder" class="screen-view">
+        <div class="module-page-container">
+          <div class="module-header-banner">
+            <div class="module-header-left">
+              <span>EXECUTIVE DOSSIER & EXPORT CENTER</span>
+              <h2>Report Builder & Geospatial Insights</h2>
+              <p>Compile multi-thematic state dossiers with map boundaries, land classification charts, governance
+                records, and export in PDF, GeoJSON, or CSV formats.</p>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:center;">
+              <select class="state-selector-dropdown"></select>
+            </div>
+          </div>
+
+          <div class="module-grid-2col">
+            <!-- Left Config Checklist -->
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Customize Dossier Modules</h3>
+                <span class="badge-white">Section Selector</span>
+              </div>
+
+              <div class="report-builder-checklist">
+                <label class="checkbox-item">
+                  <input type="checkbox" checked id="chkSummary">
+                  <span>Executive State Summary & Core Metrics</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" checked id="chkLandUse">
+                  <span>Land Use Classification (ISRO Bhuvan LULC)</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" checked id="chkGovernance">
+                  <span>Land Governance & Cadastral Records (DILRMP)</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" checked id="chkEnvironment">
+                  <span>Environmental Sentinel-2 NDVI Trends</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" checked id="chkDemographics">
+                  <span>Socio-Economic & VIIRS Nighttime Radiance</span>
+                </label>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                <button class="btn-primary" onclick="window.app.reportEngine.printDossier()">
+                  <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  Print / Export PDF Dossier
+                </button>
+                <button class="btn-secondary"
+                  onclick="window.app.reportEngine.downloadStateGeoJSON(window.app.currentStateKey)">
+                  <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Download GeoJSON Spatial Boundary
+                </button>
+                <button class="btn-secondary" onclick="window.app.reportEngine.downloadStateCSV()">
+                  <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Export All-India State Master CSV
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Dossier Live Preview Sheet -->
+            <div id="dossierPreviewContainer"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 10: ADMIN DATA MANAGEMENT
+           ========================================================================== -->
+      <section id="screen_admin_management" class="screen-view">
+        <div class="module-page-container">
+          <div class="module-header-banner">
+            <div class="module-header-left">
+              <span>SYSTEM ADMINISTRATION & INGESTION PIPELINE</span>
+              <h2>Admin Data Management & Crawler Engine</h2>
+              <p>Monitor ingestion pipelines, ping 32 GIS dataset endpoints, manage crawler triggers from
+                <code>download_all_32.py</code>, and inspect system audit logs.
+              </p>
+            </div>
+            <div>
+              <button class="btn-primary" onclick="window.app.triggerCrawlerSync()">
+                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Trigger Ingestion Sync
+              </button>
+            </div>
+          </div>
+
+          <!-- Pipeline Health Metrics -->
+          <div class="admin-pipeline-stats">
+            <div class="socio-stat-card">
+              <span>Catalogued Datasets</span>
+              <h3 id="adminTotalDatasets">32 Resources</h3>
+            </div>
+            <div class="socio-stat-card">
+              <span>Endpoint Health</span>
+              <h3 id="adminOnlineStatus">32/32 Active (100%)</h3>
+            </div>
+            <div class="socio-stat-card">
+              <span>REST APIs Connected</span>
+              <h3 id="adminApis">26 Direct APIs</h3>
+            </div>
+            <div class="socio-stat-card">
+              <span>Last Ingestion Sync</span>
+              <h3 id="adminLastSync" style="font-size:1.1rem;">2026-08-20 14:26 IST</h3>
+            </div>
+          </div>
+
+          <!-- Datasets Live Status Table -->
+          <div class="module-card" style="margin-bottom:2rem;">
+            <div class="card-title-row">
+              <h3>32 GIS Resource Endpoints</h3>
+              <span class="badge-white">Live Verification</span>
+            </div>
+
+            <table class="dataset-crawler-table">
+              <thead>
+                <tr>
+                  <th>Resource Name</th>
+                  <th>Category</th>
+                  <th>Data Provider</th>
+                  <th>Crawler Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="adminDatasetsTableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Audit Logs -->
+          <div class="module-card">
+            <div class="card-title-row">
+              <h3>System Ingestion Audit Log</h3>
+              <span class="badge-black">Immutable Log</span>
+            </div>
+            <div id="adminAuditLogsContainer"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ==========================================================================
+         GLOBAL SEARCH & AUTOCOMPLETE MODAL
+         ========================================================================== -->
+    <div id="searchModalBackdrop" class="modal-backdrop">
+      <div class="search-modal-card">
+        <div class="search-input-header">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input type="text" id="globalModalSearchInput" placeholder="Search Indian state, capital, or GIS dataset..."
+            autocomplete="off">
+          <span class="kbd-shortcut" onclick="window.app.closeSearchModal()" style="cursor:pointer;">ESC</span>
+        </div>
+        <div id="searchModalResults" class="search-modal-results"></div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- ==========================================================================
+         FOOTER
+         ========================================================================== -->
+    <footer class="portal-footer">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+            <img src="assets/logo.png" alt="GLIS Logo" style="width:34px; height:34px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.3);">
+            <h3 style="margin:0;">India Land Information Portal</h3>
+          </div>
+          <p>National Geographic Land Information System (GLIS) connecting satellite Earth observation, cadastral
+            governance, urban planning, and environmental analytics.</p>
+        </div>
+
+        <div class="footer-links">
+          <div class="footer-col">
+            <h5>Core Modules</h5>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('main_dashboard')">Main Dashboard</a>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('map_explorer')">Map Explorer GIS</a>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('site_suitability')">Infrastructure Siting</a>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('urban_planning')">Urban & FAR Zoning</a>
+          </div>
+          <div class="footer-col">
+            <h5>Data Governance</h5>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('land_governance')">Cadastral RoR (7/12)</a>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('environmental_monitoring')">Environmental
+              NDVI</a>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('socio_economic')">Socio-Economic Radar</a>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('glis_platform')">32 GIS Resources</a>
+          </div>
+          <div class="footer-col">
+            <h5>System Tools</h5>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('report_builder')">Export Dossier</a>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('admin_management')">Admin Crawler</a>
+            <a href="javascript:void(0)" onclick="window.app.reportEngine.downloadStateCSV()">Master State CSV</a>
+            <a href="javascript:void(0)" onclick="window.app.adminEngine.exportManifestText()">Download Manifest</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 India Land Information Portal (GLIS) • Open Data Initiative</p>
+        <p>Data should be cross-verified against official Survey of India (SOI) & NRSC Bhuvan records.</p>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Modular Application Scripts -->
+  <script src="js/stateData.js"></script>
+  <script src="js/resourceData.js"></script>
+  <script src="js/mapEngine.js"></script>
+  <script src="js/suitabilityEngine.js"></script>
+  <script src="js/urbanEngine.js"></script>
+  <script src="js/qrCodeGenerator.js"></script>
+  <script src="js/governanceEngine.js"></script>
+  <script src="js/environmentalEngine.js"></script>
+  <script src="js/aiEngine.js"></script>
+  <script src="js/socioEconomicEngine.js"></script>
+  <script src="js/reportEngine.js"></script>
+  <script src="js/adminEngine.js"></script>
+  <script src="js/galaxyShader.js"></script>
+  <script src="js/heroGlobe.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+
+</html>
