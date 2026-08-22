@@ -47,7 +47,7 @@
     </div>
 
     <!-- Left Side Team Credit Badge -->
-    <div class="hero-team-badge left-side">
+    <div class="hero-team-badge left-side" onclick="window.app.showTeamModal()" style="cursor: pointer;" title="Click to view team info">
       <span class="hero-team-dot"></span>
       <span class="hero-team-text">MADE BY TEAM TERRAIN TITANS</span>
     </div>
@@ -1518,6 +1518,25 @@
           <span class="kbd-shortcut" onclick="window.app.closeSearchModal()" style="cursor:pointer;">ESC</span>
         </div>
         <div id="searchModalResults" class="search-modal-results"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         TEAM INFORMATION MODAL
+         ========================================================================== -->
+    <div id="teamModalBackdrop" class="modal-backdrop" onclick="if(event.target===this) window.app.closeTeamModal()">
+      <div class="search-modal-card" style="padding: 2rem; max-width: 450px; text-align: center;">
+        <h2 style="margin-top: 0;">Team Terrain Titans</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">The creators behind the India Land Information Portal (GLIS).</p>
+        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.75rem;">
+           <li style="background: var(--bg-surface); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light);">
+             <strong>Lopinti Venketswar</strong><br><span style="font-size: 0.85em; color: var(--text-secondary);">Lead Developer / Architect</span>
+           </li>
+           <li style="background: var(--bg-surface); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light);">
+             <strong>Team Member 2</strong><br><span style="font-size: 0.85em; color: var(--text-secondary);">Role / Contributor</span>
+           </li>
+        </ul>
+        <button class="btn-magic-get-started" style="margin-top: 2rem; width: 100%; justify-content: center;" onclick="window.app.closeTeamModal()">Close</button>
       </div>
     </div>
 

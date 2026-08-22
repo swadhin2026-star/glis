@@ -81,6 +81,16 @@ class IndiaLandApp {
     }
   }
 
+  showTeamModal() {
+    const modal = document.getElementById('teamModalBackdrop');
+    if (modal) modal.classList.add('active');
+  }
+
+  closeTeamModal() {
+    const modal = document.getElementById('teamModalBackdrop');
+    if (modal) modal.classList.remove('active');
+  }
+
   // ==========================================
   // USER AUTHENTICATION & SESSION SYNC
   // ==========================================

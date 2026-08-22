@@ -277,15 +277,8 @@ class GalaxyShaderBackground {
   }
 
   setupMouse() {
-    window.addEventListener('mousemove', (e) => {
-      this.targetMouse.x = e.clientX / window.innerWidth;
-      this.targetMouse.y = 1.0 - (e.clientY / window.innerHeight);
-      this.targetMouseActive = 1.0;
-    });
-
-    window.addEventListener('mouseleave', () => {
-      this.targetMouseActive = 0.0;
-    });
+    // Mouse tracking disabled as per user request
+    this.targetMouseActive = 0.0;
   }
 
   start() {
