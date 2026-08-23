@@ -36,7 +36,7 @@ class GISMapEngine {
       center: initialCenter,
       zoom: initialZoom,
       minZoom: 4,
-      maxZoom: 19,
+      maxZoom: 22,
       zoomControl: false,
       attributionControl: true
     });
@@ -82,32 +82,37 @@ class GISMapEngine {
       // 1. CartoDB Positron (Ultra-clean black & white)
       positron: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         subdomains: 'abcd',
-        maxZoom: 19,
+        maxZoom: 22,
+        maxNativeZoom: 19,
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/">CARTO</a>'
       }),
 
       // 2. High-Resolution Esri World Imagery (Satellite)
       satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 18,
+        maxZoom: 22,
+        maxNativeZoom: 18,
         attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
       }),
 
       // 3. OpenStreetMap Standard (Roads & Cities)
       osm: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
+        maxZoom: 22,
+        maxNativeZoom: 19,
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }),
 
       // 4. CartoDB Dark Matter (Sleek Dark Mode)
       dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         subdomains: 'abcd',
-        maxZoom: 19,
+        maxZoom: 22,
+        maxNativeZoom: 19,
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, © <a href="https://carto.com/">CARTO</a>'
       }),
 
       // 5. OpenTopoMap (Terrain Contours & Topography)
       topo: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-        maxZoom: 17,
+        maxZoom: 22,
+        maxNativeZoom: 17,
         attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)'
       })
     };
@@ -548,7 +553,8 @@ class GISMapEngine {
             fillColor: '#000000',
             fillOpacity: this.currentOverlayOpacity * 0.15,
             opacity: this.currentOverlayOpacity,
-            weight: 1.5
+            weight: 1.5,
+            className: 'animated-state-boundary'
           }
         });
         this.stateBoundaryLayer.addLayer(this.currentStateBoundary);

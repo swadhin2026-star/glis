@@ -12,7 +12,7 @@
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  
+
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -50,7 +50,8 @@
     </div>
 
     <!-- Left Side Team Credit Badge -->
-    <div class="hero-team-badge left-side" onclick="window.app.showTeamModal()" style="cursor: pointer;" title="Click to view team info">
+    <div class="hero-team-badge left-side" onclick="window.app.showTeamModal()" style="cursor: pointer;"
+      title="Click to view team info">
       <span class="hero-team-dot"></span>
       <span class="hero-team-text">MADE BY TEAM TERRAIN TITANS</span>
     </div>
@@ -170,10 +171,7 @@
 
       <!-- Global Actions -->
       <div class="header-actions">
-        <div id="aiHeaderTelemetry" class="ai-header-badge" onclick="window.app.switchScreen('ai_satellite_ml')" title="Click to open AI Spatial ML Studio">
-          <span class="pulse-dot"></span>
-          <span id="aiHeaderStatusText">AI GPU (RTX A2000)</span>
-        </div>
+
         <div class="global-search-trigger" onclick="window.app.openSearchModal()">
           <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -239,7 +237,8 @@
                 <div>
                   <h4 style="font-family:var(--font-display); font-size:1.15rem; color:#000000; font-weight:800;">
                     Spatial Map & Tile Pipeline</h4>
-                  <p style="font-size:0.75rem; color:var(--ink-500);">Esri Basemaps • Sentinel-2 Tiles • DILRMP Cadastre</p>
+                  <p style="font-size:0.75rem; color:var(--ink-500);">Esri Basemaps • Sentinel-2 Tiles • DILRMP Cadastre
+                  </p>
                 </div>
                 <div class="gis-radar-pill">
                   <div class="radar-dot"></div>
@@ -362,10 +361,12 @@
               <div class="land-use-container">
                 <div class="land-use-header">
                   <h4>Land Classification</h4>
-                  <span style="font-size:0.8rem; color:var(--ink-500);">Source: <strong id="landUseSourceLabel">ISRO Bhuvan / State DES</strong> | Year: <strong id="landUseYearLabel">2024-25</strong></span>
+                  <span style="font-size:0.8rem; color:var(--ink-500);">Source: <strong id="landUseSourceLabel">ISRO
+                      Bhuvan / State DES</strong> | Year: <strong id="landUseYearLabel">2024-25</strong></span>
                 </div>
 
-                <div class="land-use-chart-wrapper" style="position: relative; height:250px; width:100%; display:flex; justify-content:center; align-items:center; margin-top: 1rem;">
+                <div class="land-use-chart-wrapper"
+                  style="position: relative; height:250px; width:100%; display:flex; justify-content:center; align-items:center; margin-top: 1rem;">
                   <canvas id="landUseChart"></canvas>
                 </div>
               </div>
@@ -399,7 +400,8 @@
                     <h3 id="dtDetailName" style="margin:0.25rem 0 0.1rem;">Ahmedabad District</h3>
                     <p id="dtDetailDivision" style="margin:0;">Ahmedabad Revenue Division • Sub-Divisions: 10</p>
                   </div>
-                  <button class="district-close-btn" onclick="window.app.closeDistrictDetail()" title="Close District Card">✕</button>
+                  <button class="district-close-btn" onclick="window.app.closeDistrictDetail()"
+                    title="Close District Card">✕</button>
                 </div>
 
                 <div class="district-stats-grid">
@@ -423,15 +425,27 @@
 
                 <div class="district-actions-row">
                   <button class="btn-primary" onclick="window.app.exploreDistrictOnMap()">
-                    <svg style="width:13px; height:13px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    <svg style="width:13px; height:13px; margin-right:4px;" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
                     Focus Map
                   </button>
                   <button class="btn-secondary" onclick="window.app.openDistrictRoR()">
-                    <svg style="width:13px; height:13px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <svg style="width:13px; height:13px; margin-right:4px;" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                     RoR 7/12
                   </button>
                   <button class="btn-secondary" onclick="window.app.openDistrictAi()">
-                    <svg style="width:13px; height:13px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <svg style="width:13px; height:13px; margin-right:4px;" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
                     AI Satellite
                   </button>
                 </div>
@@ -771,7 +785,8 @@
                   <span id="suitabilityScore" class="gauge-score-value">88</span>
                   <span class="gauge-score-max">/ 100</span>
                 </div>
-                <div id="suitabilityCategory" class="gauge-score-label badge-black">Highly Suitable (Prime Location)</div>
+                <div id="suitabilityCategory" class="gauge-score-label badge-black">Highly Suitable (Prime Location)
+                </div>
               </div>
 
               <p id="suitabilityRecommendation"
@@ -933,7 +948,8 @@
               </div>
               <div class="form-input-group" style="margin-bottom:0;">
                 <label>Khatauni / ULPIN Search:</label>
-                <input type="text" id="inputCadastralUlpin" class="form-control" placeholder="Optional Bhu-Aadhaar ULPIN">
+                <input type="text" id="inputCadastralUlpin" class="form-control"
+                  placeholder="Optional Bhu-Aadhaar ULPIN">
               </div>
               <button class="btn-primary" style="height:42px;" onclick="window.app.queryCadastralParcel()">Search
                 Cadastre</button>
@@ -1054,10 +1070,13 @@
             <div class="module-header-left">
               <span>MULTI-LAYER GIS MAP & RASTER • DEEP LEARNING STUDIO</span>
               <h2>AI Land Use & Land Cover (LULC) Map Segmentation</h2>
-              <p>Real-time neural inference powered by PyTorch U-Net (ResNet-34) on your NVIDIA RTX A2000 GPU. Classify multi-layer GIS base map tiles (Esri World Imagery, OSM rasters, optical scenes) into 6 canonical LULC land categories with quantitative area analytics.</p>
+              <p>Real-time neural inference powered by PyTorch U-Net (ResNet-34) on your NVIDIA RTX A2000 GPU. Classify
+                multi-layer GIS base map tiles (Esri World Imagery, OSM rasters, optical scenes) into 6 canonical LULC
+                land categories with quantitative area analytics.</p>
             </div>
             <div style="display:flex; gap:1rem; align-items:center;">
-              <span id="aiActiveModelPill" class="badge-black" style="font-family:var(--font-mono); font-size:0.75rem;">Model: unet_resnet34_lulc_best.pth</span>
+              <span id="aiActiveModelPill" class="badge-black"
+                style="font-family:var(--font-mono); font-size:0.75rem;">Model: unet_resnet34_lulc_best.pth</span>
             </div>
           </div>
 
@@ -1093,23 +1112,30 @@
                 <h3>Multi-Layer GIS Map Tile & Raster Selection</h3>
                 <span class="badge-white">Input Source</span>
               </div>
-              <p style="font-size:0.85rem; color:var(--ink-600); margin-bottom:1rem;">Select a spatial base map raster from the GIS tile library or upload custom aerial/map imagery.</p>
+              <p style="font-size:0.85rem; color:var(--ink-600); margin-bottom:1rem;">Select a spatial base map raster
+                from the GIS tile library or upload custom aerial/map imagery.</p>
 
-              <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--ink-500);">Pre-loaded GIS Map & Raster Tiles (256x256)</label>
+              <label
+                style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--ink-500);">Pre-loaded
+                GIS Map & Raster Tiles (256x256)</label>
               <div id="aiSampleTileGallery" class="satellite-tile-gallery">
-                <div class="tile-sample-btn active" onclick="window.app.selectAiSample('data/segmentation/test_image/Test_1.jpg', this)">
+                <div class="tile-sample-btn active"
+                  onclick="window.app.selectAiSample('data/segmentation/test_image/Test_1.jpg', this)">
                   <img src="/data/segmentation/test_image/Test_1.jpg" alt="Tile 1">
                   <span>Tile 1 (Wetland / Coastal)</span>
                 </div>
-                <div class="tile-sample-btn" onclick="window.app.selectAiSample('data/segmentation/test_image/Test_2.jpg', this)">
+                <div class="tile-sample-btn"
+                  onclick="window.app.selectAiSample('data/segmentation/test_image/Test_2.jpg', this)">
                   <img src="/data/segmentation/test_image/Test_2.jpg" alt="Tile 2">
                   <span>Tile 2 (Urban / Agri)</span>
                 </div>
-                <div class="tile-sample-btn" onclick="window.app.selectAiSample('data/segmentation/test_image/PHOTO-2023-04-08-11-31-19.jpg', this)">
+                <div class="tile-sample-btn"
+                  onclick="window.app.selectAiSample('data/segmentation/test_image/PHOTO-2023-04-08-11-31-19.jpg', this)">
                   <img src="/data/segmentation/test_image/PHOTO-2023-04-08-11-31-19.jpg" alt="Tile 3">
                   <span>Tile 3 (Dense Forest)</span>
                 </div>
-                <div class="tile-sample-btn" onclick="window.app.selectAiSample('data/segmentation/test_image/PHOTO-2023-04-08-11-32-51.jpg', this)">
+                <div class="tile-sample-btn"
+                  onclick="window.app.selectAiSample('data/segmentation/test_image/PHOTO-2023-04-08-11-32-51.jpg', this)">
                   <img src="/data/segmentation/test_image/PHOTO-2023-04-08-11-32-51.jpg" alt="Tile 4">
                   <span>Tile 4 (Agri Farmland)</span>
                 </div>
@@ -1117,19 +1143,28 @@
 
               <!-- Drag and Drop Upload -->
               <div class="ai-upload-dropzone" onclick="document.getElementById('aiCustomFileInput').click()">
-                <svg style="width:28px; height:28px; margin:0 auto 0.5rem; color:var(--ink-400);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                <svg style="width:28px; height:28px; margin:0 auto 0.5rem; color:var(--ink-400);" fill="none"
+                  stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
-                <div style="font-weight:700; font-size:0.85rem; color:#000000;">Click or Drop Custom GIS Map Tile / Aerial Raster</div>
-                <p style="font-size:0.75rem; color:var(--ink-500); margin-top:2px;">Supports JPG, PNG, GeoTIFF, WebP (Automated multi-band RGB normalization)</p>
-                <input type="file" id="aiCustomFileInput" accept="image/*" style="display:none;" onchange="window.app.handleCustomImageUpload(event)">
+                <div style="font-weight:700; font-size:0.85rem; color:#000000;">Click or Drop Custom GIS Map Tile /
+                  Aerial Raster</div>
+                <p style="font-size:0.75rem; color:var(--ink-500); margin-top:2px;">Supports JPG, PNG, GeoTIFF, WebP
+                  (Automated multi-band RGB normalization)</p>
+                <input type="file" id="aiCustomFileInput" accept="image/*" style="display:none;"
+                  onchange="window.app.handleCustomImageUpload(event)">
               </div>
 
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
-                <div id="aiInferenceTimeBadge" style="font-size:0.75rem; font-weight:700; color:var(--ink-600);">Ready for Neural Inference</div>
-                <button id="btnRunAiSegmentation" class="btn-primary" style="height:44px; padding:0 1.5rem;" onclick="window.app.runAiSegmentation()">
-                  <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <div id="aiInferenceTimeBadge" style="font-size:0.75rem; font-weight:700; color:var(--ink-600);">Ready
+                  for Neural Inference</div>
+                <button id="btnRunAiSegmentation" class="btn-primary" style="height:44px; padding:0 1.5rem;"
+                  onclick="window.app.runAiSegmentation()">
+                  <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                   Run PyTorch U-Net Inference
                 </button>
@@ -1151,30 +1186,41 @@
                 </div>
                 <div class="visualizer-pane" style="position:relative;">
                   <span class="visualizer-pane-label">PyTorch LULC Mask</span>
-                  <img id="aiUnderlayImg" src="/data/segmentation/test_image/Test_1.jpg" alt="Underlay" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0;">
-                  <img id="aiMaskPreviewImg" src="/models/mask_Test_1.png" alt="Predicted Mask" style="position:absolute; top:0; left:0; width:100%; height:100%;">
+                  <img id="aiUnderlayImg" src="/data/segmentation/test_image/Test_1.jpg" alt="Underlay"
+                    style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0;">
+                  <img id="aiMaskPreviewImg" src="/models/mask_Test_1.png" alt="Predicted Mask"
+                    style="position:absolute; top:0; left:0; width:100%; height:100%;">
                 </div>
               </div>
 
               <!-- Slider Controls (Opacity Blend + Confidence Threshold) -->
               <div style="display:flex; flex-direction:column; gap:0.65rem; margin-top:1rem;">
                 <div class="opacity-slider-wrap">
-                  <span style="font-size:0.75rem; font-weight:800; color:var(--ink-700); min-width:140px;">Mask Blend Overlay:</span>
-                  <input type="range" id="aiMaskOpacitySlider" min="0" max="100" value="100" oninput="window.app.updateMaskOpacity(this.value)">
-                  <span id="aiOpacityValText" style="font-size:0.75rem; font-weight:700; font-family:var(--font-mono); width:45px; text-align:right;">100%</span>
+                  <span style="font-size:0.75rem; font-weight:800; color:var(--ink-700); min-width:140px;">Mask Blend
+                    Overlay:</span>
+                  <input type="range" id="aiMaskOpacitySlider" min="0" max="100" value="100"
+                    oninput="window.app.updateMaskOpacity(this.value)">
+                  <span id="aiOpacityValText"
+                    style="font-size:0.75rem; font-weight:700; font-family:var(--font-mono); width:45px; text-align:right;">100%</span>
                 </div>
 
                 <div class="opacity-slider-wrap" style="background:#f0fdf4; border:1px solid #bbf7d0;">
-                  <span style="font-size:0.75rem; font-weight:800; color:#166534; min-width:140px;">Confidence Threshold:</span>
-                  <input type="range" id="aiConfidenceSlider" min="0" max="95" value="0" step="5" oninput="window.app.updateConfidenceThreshold(this.value)">
-                  <span id="aiConfidenceValText" style="font-size:0.75rem; font-weight:700; font-family:var(--font-mono); width:45px; text-align:right; color:#166534;">0%</span>
+                  <span style="font-size:0.75rem; font-weight:800; color:#166534; min-width:140px;">Confidence
+                    Threshold:</span>
+                  <input type="range" id="aiConfidenceSlider" min="0" max="95" value="0" step="5"
+                    oninput="window.app.updateConfidenceThreshold(this.value)">
+                  <span id="aiConfidenceValText"
+                    style="font-size:0.75rem; font-weight:700; font-family:var(--font-mono); width:45px; text-align:right; color:#166534;">0%</span>
                 </div>
               </div>
 
               <!-- Confidence Stats Bar -->
-              <div id="aiConfidenceStatsBar" style="display:flex; justify-content:space-between; align-items:center; background:var(--ink-50); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.6rem 0.85rem; margin-top:0.75rem; font-size:0.75rem;">
-                <div><span style="color:var(--ink-500);">Mean Confidence:</span> <strong id="aiMeanConfVal" style="color:#000000;">91.4%</strong></div>
-                <div><span style="color:var(--ink-500);">High Confidence Pixels:</span> <strong id="aiConfCoverageVal" style="color:#10b981;">100%</strong></div>
+              <div id="aiConfidenceStatsBar"
+                style="display:flex; justify-content:space-between; align-items:center; background:var(--ink-50); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.6rem 0.85rem; margin-top:0.75rem; font-size:0.75rem;">
+                <div><span style="color:var(--ink-500);">Mean Confidence:</span> <strong id="aiMeanConfVal"
+                    style="color:#000000;">91.4%</strong></div>
+                <div><span style="color:var(--ink-500);">High Confidence Pixels:</span> <strong id="aiConfCoverageVal"
+                    style="color:#10b981;">100%</strong></div>
               </div>
 
               <!-- Quantitative Class Breakdown -->
@@ -1189,12 +1235,14 @@
             <div class="card-title-row">
               <div>
                 <h3>GIS Neural Valuation & Development Index Predictor</h3>
-                <p style="font-size:0.85rem; color:var(--ink-600); margin-top:2px;">Trained Multilayer Perceptron (MLP) regressor on multi-attribute GIS spatial variables.</p>
+                <p style="font-size:0.85rem; color:var(--ink-600); margin-top:2px;">Trained Multilayer Perceptron (MLP)
+                  regressor on multi-attribute GIS spatial variables.</p>
               </div>
               <span class="badge-white">Checkpoint: land_gis_model.pth</span>
             </div>
 
-            <div style="display:grid; grid-template-columns:repeat(4, 1fr) auto; gap:1rem; align-items:flex-end; margin-top:1.25rem;">
+            <div
+              style="display:grid; grid-template-columns:repeat(4, 1fr) auto; gap:1rem; align-items:flex-end; margin-top:1.25rem;">
               <div class="form-input-group" style="margin-bottom:0;">
                 <label>Elevation (Meters MSL):</label>
                 <input type="number" id="gisElevationInput" class="form-control" value="180" min="0" max="5000">
@@ -1211,17 +1259,25 @@
                 <label>Mean NDVI Vegetation Index:</label>
                 <input type="number" id="gisNdviInput" class="form-control" value="0.48" step="0.01" min="-1" max="1">
               </div>
-              <button class="btn-primary" style="height:42px;" onclick="window.app.runGISModelInference()">Predict Valuation</button>
+              <button class="btn-primary" style="height:42px;" onclick="window.app.runGISModelInference()">Predict
+                Valuation</button>
             </div>
 
-            <div id="gisModelResultContainer" style="margin-top:1.25rem; display:none; background:var(--ink-50); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:1rem 1.5rem; justify-content:space-between; align-items:center;">
+            <div id="gisModelResultContainer"
+              style="margin-top:1.25rem; display:none; background:var(--ink-50); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:1rem 1.5rem; justify-content:space-between; align-items:center;">
               <div>
-                <span style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--ink-500);">Predicted GIS Metric</span>
-                <h4 id="gisResultTargetName" style="font-size:1.1rem; color:#000000; margin-top:2px;">Land Composite Suitability Index</h4>
+                <span
+                  style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--ink-500);">Predicted
+                  GIS Metric</span>
+                <h4 id="gisResultTargetName" style="font-size:1.1rem; color:#000000; margin-top:2px;">Land Composite
+                  Suitability Index</h4>
               </div>
               <div style="text-align:right;">
-                <span style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--ink-500);">Neural Model Output</span>
-                <div id="gisResultVal" style="font-size:1.6rem; font-weight:900; font-family:var(--font-display); color:#000000;">78.40 / 100</div>
+                <span style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--ink-500);">Neural
+                  Model Output</span>
+                <div id="gisResultVal"
+                  style="font-size:1.6rem; font-weight:900; font-family:var(--font-display); color:#000000;">78.40 / 100
+                </div>
               </div>
             </div>
           </div>
@@ -1497,16 +1553,22 @@
     <div id="teamModalBackdrop" class="modal-backdrop" onclick="if(event.target===this) window.app.closeTeamModal()">
       <div class="search-modal-card" style="padding: 2rem; max-width: 450px; text-align: center;">
         <h2 style="margin-top: 0;">Team Terrain Titans</h2>
-        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">The creators behind the India Land Information Portal (GLIS).</p>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">The creators behind the India Land Information
+          Portal (GLIS).</p>
         <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.75rem;">
-           <li style="background: var(--bg-surface); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light);">
-             <strong>Lopinti Venketswar</strong><br><span style="font-size: 0.85em; color: var(--text-secondary);">Lead Developer / Architect</span>
-           </li>
-           <li style="background: var(--bg-surface); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light);">
-             <strong>Team Member 2</strong><br><span style="font-size: 0.85em; color: var(--text-secondary);">Role / Contributor</span>
-           </li>
+          <li
+            style="background: var(--bg-surface); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light);">
+            <strong>Lopinti Venketswar</strong><br><span style="font-size: 0.85em; color: var(--text-secondary);">Lead
+              Developer / Architect</span>
+          </li>
+          <li
+            style="background: var(--bg-surface); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light);">
+            <strong>Team Member 2</strong><br><span style="font-size: 0.85em; color: var(--text-secondary);">Role /
+              Contributor</span>
+          </li>
         </ul>
-        <button class="btn-magic-get-started" style="margin-top: 2rem; width: 100%; justify-content: center;" onclick="window.app.closeTeamModal()">Close</button>
+        <button class="btn-magic-get-started" style="margin-top: 2rem; width: 100%; justify-content: center;"
+          onclick="window.app.closeTeamModal()">Close</button>
       </div>
     </div>
 
@@ -1520,7 +1582,8 @@
       <div class="footer-top">
         <div class="footer-brand">
           <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
-            <img src="assets/logo.png" alt="GLIS Logo" style="width:34px; height:34px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.3);">
+            <img src="assets/logo.png" alt="GLIS Logo"
+              style="width:34px; height:34px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.3);">
             <h3 style="margin:0;">India Land Information Portal</h3>
           </div>
           <p>National Geographic Land Information System (GLIS) connecting satellite Earth observation, cadastral

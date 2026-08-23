@@ -419,3 +419,15 @@ input:checked + .slider:before {
   }
 }
 
+/* State Boundary Animation */
+@keyframes stateBorderDash {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+.animated-state-boundary {
+  stroke-dasharray: 8, 8;
+  animation: stateBorderDash 3s linear infinite;
+}
+

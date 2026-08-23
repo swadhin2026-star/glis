@@ -19,8 +19,10 @@ import os
 import sys
 import json
 import base64
+import secrets
 import argparse
 import functools
+import traceback
 import subprocess
 from pathlib import Path
 from http.server import HTTPServer, SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -29,6 +31,33 @@ from urllib.parse import urlparse
 BASE_DIR = Path(__file__).resolve().parent
 MODELS_DIR = BASE_DIR / "models"
 DATA_DIR = BASE_DIR / "data"
+SAMPLES_DIR = (DATA_DIR / "segmentation" / "test_image").resolve()
+
+# ==============================================================================
+# Security configuration
+# ==============================================================================
+
+# Only these top-level paths are servable as static files. Everything else
+# (server.py, .venv, .git, requirements.txt, notebooks, etc.) is blocked.
+ALLOWED_STATIC_PREFIXES = (
+    "/stitch_india_land_information_portal/",
+    "/data/",
+    "/models/",
+)
+
+# Browsers running the portal locally use these origins. Add your deployed
+# origin here if you host this somewhere other than localhost.
+ALLOWED_ORIGINS = {
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "null",  # file:// pages send Origin: null
+}
+
+# Optional shared-secret auth. If BACKEND_API_KEY is set in the environment,
+# every /api/* request must include header 'X-API-Key: <value>'.
+API_KEY = os.environ.get("BACKEND_API_KEY", "")
+
+MAX_BODY_BYTES = 20 * 1024 * 1024  # 20 MB cap on request bodies
 
 # ==============================================================================
 # Safe AI Dependencies Import with Fallbacks
@@ -120,20 +149,63 @@ class LandPortalRequestHandler(SimpleHTTPRequestHandler):
 
         # API: Status & Hardware
         if path == "/api/status":
+            if not self._check_api_key():
+                return
             self.handle_api_status()
             return
 
         # API: Sample satellite images
         if path == "/api/samples":
+            if not self._check_api_key():
+                return
             self.handle_api_samples()
             return
 
-        # Default static file serving
+        # Everything else must be static content under an explicitly
+        # allowed directory. This blocks source code, .venv, .git, data
+        # files outside the sample set, etc. from being downloaded.
+        if not self._is_allowed_static_path(path):
+            self.send_error(403, "Forbidden")
+            return
+
+        if path.startswith("/models/") and not path.lower().endswith((".png", ".jpg", ".jpeg")):
+            # Only serve generated mask/preview images from /models, never
+            # the .pth model checkpoints themselves.
+            self.send_error(403, "Forbidden")
+            return
+
         return super().do_GET()
+
+    def _is_allowed_static_path(self, path):
+        if ".." in path:
+            return False
+        return any(path.startswith(prefix) for prefix in ALLOWED_STATIC_PREFIXES)
+
+    def _check_api_key(self):
+        """If BACKEND_API_KEY is configured, require a matching X-API-Key header."""
+        if not API_KEY:
+            return True
+        supplied = self.headers.get("X-API-Key", "")
+        if supplied == API_KEY:
+            return True
+        self._send_json({"error": "Unauthorized"}, 401)
+        return False
 
     def do_POST(self):
         parsed = urlparse(self.path)
         path = parsed.path
+
+        if not self._check_api_key():
+            return
+
+        # Reject oversized bodies before reading them into memory.
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+        except ValueError:
+            content_length = 0
+        if content_length > MAX_BODY_BYTES:
+            self._send_json({"error": "Request body too large"}, 413)
+            return
 
         if path == "/api/predict":
             self.handle_api_predict()
@@ -144,22 +216,32 @@ class LandPortalRequestHandler(SimpleHTTPRequestHandler):
         else:
             self.send_error(404, "API Endpoint Not Found")
 
+    def _cors_origin(self):
+        origin = self.headers.get("Origin", "")
+        return origin if origin in ALLOWED_ORIGINS else None
+
     def _send_json(self, data, status_code=200):
         body = json.dumps(data).encode("utf-8")
         self.send_response(status_code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Access-Control-Allow-Origin", "*")
+        origin = self._cors_origin()
+        if origin:
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-API-Key")
         self.end_headers()
         self.wfile.write(body)
 
     def do_OPTIONS(self):
         self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
+        origin = self._cors_origin()
+        if origin:
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-API-Key")
         self.end_headers()
 
     def handle_api_status(self):
@@ -226,20 +308,39 @@ class LandPortalRequestHandler(SimpleHTTPRequestHandler):
 
             temp_img_path = None
             if image_base64:
-                img_bytes = base64.b64decode(image_base64.split(",")[-1])
-                temp_img_path = MODELS_DIR / "temp_input.jpg"
+                # Cap decoded upload size to avoid memory-exhaustion DoS.
+                b64_data = image_base64.split(",")[-1]
+                if len(b64_data) > MAX_BODY_BYTES:
+                    self._send_json({"error": "Image payload too large"}, 413)
+                    return
+                try:
+                    img_bytes = base64.b64decode(b64_data, validate=True)
+                except Exception:
+                    self._send_json({"error": "Invalid base64 image data"}, 400)
+                    return
+                # Unique filename per request instead of a shared fixed name,
+                # to avoid race conditions between concurrent requests.
+                temp_img_path = MODELS_DIR / f"temp_input_{secrets.token_hex(8)}.jpg"
                 with open(temp_img_path, "wb") as f:
                     f.write(img_bytes)
                 target_path = temp_img_path
             elif image_path_str:
-                target_path = Path(image_path_str)
-                if not target_path.is_absolute():
-                    target_path = BASE_DIR / target_path
+                # SECURITY: image_path is user-controlled input. Only allow
+                # filenames that resolve inside SAMPLES_DIR - no absolute
+                # paths, no ".." traversal, nothing outside the sample set.
+                candidate = (SAMPLES_DIR / Path(image_path_str).name).resolve()
+                if SAMPLES_DIR not in candidate.parents and candidate != SAMPLES_DIR:
+                    self._send_json({"error": "Invalid image path"}, 400)
+                    return
+                if os.path.commonpath([str(candidate), str(SAMPLES_DIR)]) != str(SAMPLES_DIR):
+                    self._send_json({"error": "Invalid image path"}, 400)
+                    return
+                target_path = candidate
             else:
-                target_path = DATA_DIR / "segmentation" / "test_image" / "Test_1.jpg"
+                target_path = SAMPLES_DIR / "Test_1.jpg"
 
             if not target_path.exists():
-                self._send_json({"error": f"Image file not found: {target_path}"}, 400)
+                self._send_json({"error": "Image file not found"}, 400)
                 return
 
             model, device = get_loaded_model()
@@ -323,8 +424,16 @@ class LandPortalRequestHandler(SimpleHTTPRequestHandler):
             }
             self._send_json(response_data)
 
-        except Exception as e:
-            self._send_json({"error": str(e)}, 500)
+        except Exception:
+            # Log full detail server-side only; never expose internals to the client.
+            traceback.print_exc()
+            self._send_json({"error": "Prediction failed. See server logs for details."}, 500)
+        finally:
+            if temp_img_path is not None and Path(temp_img_path).exists():
+                try:
+                    os.remove(temp_img_path)
+                except OSError:
+                    pass
 
     def handle_api_gis(self):
         if not AI_ENGINE_AVAILABLE:
@@ -343,6 +452,11 @@ class LandPortalRequestHandler(SimpleHTTPRequestHandler):
                 self._send_json({"error": "GIS model checkpoint not found"}, 500)
                 return
 
+            # NOTE: weights_only=False allows arbitrary pickled objects to be
+            # deserialized. Only safe because this file is produced by your
+            # own training pipeline (train.py) and lives in a directory this
+            # server no longer exposes for public upload/overwrite. Do not
+            # point gis_model_path at a file of unknown origin.
             checkpoint = torch.load(gis_model_path, map_location="cpu", weights_only=False)
             features = checkpoint["feature_cols"]
 
@@ -364,17 +478,25 @@ class LandPortalRequestHandler(SimpleHTTPRequestHandler):
                 "predicted_value": round(pred_val, 2),
                 "features_used": features
             })
-        except Exception as e:
-            self._send_json({"error": str(e)}, 500)
+        except Exception:
+            traceback.print_exc()
+            self._send_json({"error": "GIS prediction failed. See server logs for details."}, 500)
 
 
-def run_server(host="0.0.0.0", port=8000):
+def run_server(host="127.0.0.1", port=8000):
     handler = functools.partial(LandPortalRequestHandler, directory=str(BASE_DIR))
     server_address = (host, port)
     httpd = ThreadingHTTPServer(server_address, handler)
     print("="*75)
     print("  INDIA LAND INFORMATION PORTAL & AI MODEL SERVER")
     print("="*75)
+    if host not in ("127.0.0.1", "localhost"):
+        print(f"[!] WARNING: Server is bound to '{host}', not just localhost.")
+        print("[!] This exposes the API to your network (or the internet, if port-forwarded).")
+        print("[!] Set BACKEND_API_KEY and review ALLOWED_ORIGINS in server.py before doing this.")
+    if not API_KEY:
+        print("[!] BACKEND_API_KEY is not set - /api endpoints are unauthenticated.")
+        print("[!] Fine for local-only use; set the env var before exposing this server.")
     print(f"[*] Server running on: http://localhost:{port}/")
     print(f"[*] Web Portal:        http://localhost:{port}/stitch_india_land_information_portal/")
     print(f"[*] REST API Health:   http://localhost:{port}/api/status")
@@ -407,7 +529,7 @@ if __name__ == "__main__":
     auto_switch_venv()
 
     parser = argparse.ArgumentParser(description="Start Land Portal & AI Backend Server")
-    parser.add_argument("--host", type=str, default="0.0.0.0", help="Host IP (default: 0.0.0.0)")
+    parser.add_argument("--host", type=str, default="127.0.0.1", help="Host IP (default: 127.0.0.1, localhost-only). Use 0.0.0.0 only if you understand the exposure and have set BACKEND_API_KEY.")
     parser.add_argument("--port", type=int, default=8000, help="Port number (default: 8000)")
     parser.add_argument("--no-reexec", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()

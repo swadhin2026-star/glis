@@ -840,7 +840,7 @@ class IndiaLandApp {
     samples.slice(0, 8).forEach((sample, idx) => {
       const btn = document.createElement('div');
       btn.className = `tile-sample-btn ${idx === 0 ? 'active' : ''}`;
-      btn.onclick = () => this.selectAiSample(sample.path, btn);
+      btn.onclick = () => this.selectAiSample(sample.path, sample.relative_url, btn);
 
       const label = sample.name.replace('.jpg', '').replace('Test_', 'GIS-Tile-').replace('PHOTO-2023-04-08-', 'Map-Raster-');
       btn.innerHTML = `
@@ -858,7 +858,27 @@ class IndiaLandApp {
     }
   }
 
-  selectAiSample(samplePath, btnEl) {
+  selectAiSample(samplePath, relativeUrl, btnEl) {
+    if (typeof relativeUrl === 'object' || typeof relativeUrl === 'undefined') {
+      btnEl = relativeUrl;
+      relativeUrl = undefined;
+    }
+
+    let url = relativeUrl;
+    if (!url) {
+      if (samplePath.includes('data\\segmentation') || samplePath.includes('data/segmentation')) {
+        // Extract the relative path starting from 'data/'
+        const match = samplePath.match(/data[\\/].*/);
+        if (match) {
+          url = '/' + match[0].replace(/\\/g, '/');
+        } else {
+          url = samplePath;
+        }
+      } else {
+        url = samplePath.startsWith('http') || samplePath.startsWith('/') ? samplePath : `/${samplePath.replace(/\\/g, '/')}`;
+      }
+    }
+
     this.currentAiSample = samplePath;
     this.currentAiBase64 = null;
 
@@ -867,7 +887,6 @@ class IndiaLandApp {
 
     const rawImg = document.getElementById('aiRawPreviewImg');
     const underlayImg = document.getElementById('aiUnderlayImg');
-    const url = samplePath.startsWith('http') || samplePath.startsWith('/') ? samplePath : `/${samplePath.replace(/\\/g, '/')}`;
 
     if (rawImg) rawImg.src = url;
     if (underlayImg) underlayImg.src = url;

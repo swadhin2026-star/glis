@@ -5,7 +5,9 @@
 
 class AIEngine {
   constructor() {
-    this.apiBase = window.location.origin;
+    // Determine the API base URL. If running locally (e.g. VS Code Live Server or file://), point to the local Python backend on port 8000.
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+    this.apiBase = isLocal ? 'http://127.0.0.1:8000' : window.location.origin;
     this.status = {
       online: false,
       ai_engine: "checking",
