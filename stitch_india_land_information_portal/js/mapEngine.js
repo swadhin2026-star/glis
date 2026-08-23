@@ -18,6 +18,7 @@ class GISMapEngine {
     this.measurePoints = [];
     this.measureLayer = null;
     this.districtMarkersGroup = null;
+    this.currentOverlayOpacity = 0.75;
   }
 
   init(initialCenter = [22.5937, 78.9629], initialZoom = 5) {
@@ -545,7 +546,8 @@ class GISMapEngine {
           style: {
             color: '#ef4444',
             fillColor: '#000000',
-            fillOpacity: 0.15,
+            fillOpacity: this.currentOverlayOpacity * 0.15,
+            opacity: this.currentOverlayOpacity,
             weight: 1.5
           }
         });
@@ -648,7 +650,13 @@ class GISMapEngine {
           const drawOverlay = (geojsonData) => {
             if (geojsonData) {
               const shape = L.geoJSON(geojsonData, {
-                style: { color: '#ef4444', fillColor: overlayColor, fillOpacity: 0.25, weight: 1.2 }
+                style: { 
+                  color: '#ef4444', 
+                  fillColor: overlayColor, 
+                  fillOpacity: this.currentOverlayOpacity * 0.3, 
+                  opacity: this.currentOverlayOpacity,
+                  weight: 1.2 
+                }
               });
               shape.bindTooltip(`${state.name} ${overlayKey.toUpperCase()} Layer Active`, { permanent: false });
               this.overlayLayers[overlayKey].addLayer(shape);
@@ -691,6 +699,8 @@ class GISMapEngine {
 
   setOverlayOpacity(opacityValue) {
     const opacity = parseFloat(opacityValue);
+    this.currentOverlayOpacity = opacity;
+
     if (this.currentStateBoundary) {
       if (this.currentStateBoundary.setStyle) {
         this.currentStateBoundary.setStyle({ fillOpacity: opacity * 0.15, opacity: opacity });
