@@ -614,7 +614,15 @@ body {
 }
 
 @media (max-width: 768px) {
-  .main-header { height: auto; padding: 1rem; flex-wrap: wrap; gap: 0.75rem; }
+  .main-header { 
+    height: auto; 
+    padding: 1rem; 
+    flex-wrap: wrap; 
+    gap: 0.75rem; 
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
   .nav-modules { order: 3; width: 100%; max-width: 100%; justify-content: flex-start; }
   .footer-links { flex-direction: column; gap: 1.5rem; }
 }

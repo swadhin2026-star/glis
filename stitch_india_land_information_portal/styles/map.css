@@ -406,3 +406,16 @@ input:checked + .slider:before {
 .gis-popup-stats div strong {
   color: #000000;
 }
+
+@media (max-width: 768px) {
+  .leaflet-bottom {
+    bottom: 40vh !important;
+  }
+  .leaflet-left {
+    left: 10px !important;
+  }
+  .map-sidebar {
+    z-index: 2000;
+  }
+}
+

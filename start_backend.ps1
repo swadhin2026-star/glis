@@ -10,7 +10,9 @@ Set-Location $WorkspaceRoot
 
 $PythonExe = Join-Path $WorkspaceRoot ".venv\Scripts\python.exe"
 if (-not (Test-Path $PythonExe)) {
-    $PythonExe = "python"
+    Write-Host "[!] Virtual environment not found or broken." -ForegroundColor Red
+    Write-Host "[!] Please run .\setup_portable_python.ps1 first." -ForegroundColor Yellow
+    exit 1
 }
 
 Write-Host "[*] Using Python: $PythonExe" -ForegroundColor Green

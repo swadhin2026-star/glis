@@ -12,6 +12,9 @@
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Application Stylesheets (Separated & Modular Monochrome) -->
   <link rel="stylesheet" href="styles/main.css">
@@ -358,45 +361,12 @@
               <!-- Land Classification Composition -->
               <div class="land-use-container">
                 <div class="land-use-header">
-                  <h4>Land Classification (ISRO Bhuvan / State DES)</h4>
-                  <span style="font-size:0.8rem; color:var(--ink-500);">Year: <strong>2024-25</strong></span>
+                  <h4>Land Classification</h4>
+                  <span style="font-size:0.8rem; color:var(--ink-500);">Source: <strong id="landUseSourceLabel">ISRO Bhuvan / State DES</strong> | Year: <strong id="landUseYearLabel">2024-25</strong></span>
                 </div>
 
-                <div class="land-use-bar-stack">
-                  <div id="barAgri" class="bar-segment bar-agri" style="width:53%;" title="Agriculture"></div>
-                  <div id="barForest" class="bar-segment bar-forest" style="width:11%;" title="Forest"></div>
-                  <div id="barBuilt" class="bar-segment bar-built" style="width:6%;" title="Built-up"></div>
-                  <div id="barWater" class="bar-segment bar-water" style="width:3%;" title="Water Bodies"></div>
-                  <div id="barBarren" class="bar-segment bar-barren" style="width:27%;" title="Barren / Wasteland">
-                  </div>
-                </div>
-
-                <div class="land-use-legend-grid">
-                  <div class="legend-item">
-                    <div class="legend-color-dot" style="background:#000000;"></div>
-                    <span>Agriculture</span>
-                    <strong id="valAgri">53%</strong>
-                  </div>
-                  <div class="legend-item">
-                    <div class="legend-color-dot" style="background:#3f3f46;"></div>
-                    <span>Forest</span>
-                    <strong id="valForest">11%</strong>
-                  </div>
-                  <div class="legend-item">
-                    <div class="legend-color-dot" style="background:#71717a;"></div>
-                    <span>Built-up</span>
-                    <strong id="valBuilt">6%</strong>
-                  </div>
-                  <div class="legend-item">
-                    <div class="legend-color-dot" style="background:#a1a1aa;"></div>
-                    <span>Water Bodies</span>
-                    <strong id="valWater">3%</strong>
-                  </div>
-                  <div class="legend-item">
-                    <div class="legend-color-dot" style="background:#d4d4d8;"></div>
-                    <span>Barren / Wasteland</span>
-                    <strong id="valBarren">27%</strong>
-                  </div>
+                <div class="land-use-chart-wrapper" style="position: relative; height:250px; width:100%; display:flex; justify-content:center; align-items:center; margin-top: 1rem;">
+                  <canvas id="landUseChart"></canvas>
                 </div>
               </div>
             </div>

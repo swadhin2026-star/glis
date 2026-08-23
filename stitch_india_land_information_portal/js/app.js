@@ -284,31 +284,62 @@ class IndiaLandApp {
     if (distEl) distEl.textContent = state.districts;
     if (capEl) capEl.textContent = state.capital;
 
-    // Land Use Bars (Monochrome)
-    const agriBar = document.getElementById('barAgri');
-    const forestBar = document.getElementById('barForest');
-    const builtBar = document.getElementById('barBuilt');
-    const waterBar = document.getElementById('barWater');
-    const barrenBar = document.getElementById('barBarren');
+    // Update Land Use Labels
+    const sourceLabel = document.getElementById('landUseSourceLabel');
+    const yearLabel = document.getElementById('landUseYearLabel');
+    if (sourceLabel) sourceLabel.textContent = state.landUseSource || 'ISRO Bhuvan / State DES';
+    if (yearLabel) yearLabel.textContent = state.landUseYear || '2024-25';
 
-    if (agriBar) agriBar.style.width = `${state.land.agriculture}%`;
-    if (forestBar) forestBar.style.width = `${state.land.forest}%`;
-    if (builtBar) builtBar.style.width = `${state.land.built}%`;
-    if (waterBar) waterBar.style.width = `${state.land.water}%`;
-    if (barrenBar) barrenBar.style.width = `${state.land.barren}%`;
-
-    const valAgri = document.getElementById('valAgri');
-    const valForest = document.getElementById('valForest');
-    const valBuilt = document.getElementById('valBuilt');
-    const valWater = document.getElementById('valWater');
-    const valBarren = document.getElementById('valBarren');
-
-    if (valAgri) valAgri.textContent = `${state.land.agriculture}%`;
-    if (valForest) valForest.textContent = `${state.land.forest}%`;
-    if (valBuilt) valBuilt.textContent = `${state.land.built}%`;
-    if (valWater) valWater.textContent = `${state.land.water}%`;
-    if (valBarren) valBarren.textContent = `${state.land.barren}%`;
-
+    // Update Land Use Chart
+    const ctx = document.getElementById('landUseChart');
+    if (ctx) {
+      if (window.landUseChartInstance) {
+        window.landUseChartInstance.destroy();
+      }
+      window.landUseChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Agriculture', 'Forest', 'Built-up', 'Water Bodies', 'Barren / Wasteland'],
+          datasets: [{
+            data: [
+              state.land.agriculture,
+              state.land.forest,
+              state.land.built,
+              state.land.water,
+              state.land.barren
+            ],
+            backgroundColor: [
+              '#F26B21', // Orange/Yellowish
+              '#3D7A58', // Leaf Green
+              '#7C8B99', // Concrete Gray
+              '#2C6E9E', // Map Blue
+              '#E8DAC3'  // Sand/Barren
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                boxWidth: 12,
+                font: { family: 'Inter, sans-serif' }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ' ' + context.label + ': ' + context.parsed + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
     // District Chips
     const districtContainer = document.getElementById('districtChipsContainer');
     const districtCountEl = document.getElementById('districtCountBadge');
