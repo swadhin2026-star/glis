@@ -19,9 +19,11 @@ class IndiaLandApp {
     this.socioEconomicEngine = new SocioEconomicEngine();
     this.reportEngine = new ReportEngine();
     this.adminEngine = new AdminDataEngine();
+    this.liveDataEngine = new LiveDataEngine();
   }
 
-  init() {
+  async init() {
+    await this.liveDataEngine.checkSources();
     this.setupNavigation();
     this.setupGlobalSearch();
     this.setupStateSelectors();
@@ -266,8 +268,8 @@ class IndiaLandApp {
     this.showToast(`Selected: ${stateDatabase[stateKey].name}`);
   }
 
-  renderStateProfile(stateKey) {
-    const state = stateDatabase[stateKey];
+  async renderStateProfile(stateKey) {
+    const state = await this.liveDataEngine.getStateProfile(stateKey);
     if (!state) return;
 
     const stateNameEl = document.getElementById('profileStateName');
@@ -279,7 +281,9 @@ class IndiaLandApp {
 
     if (stateNameEl) stateNameEl.textContent = state.name;
     if (stateDescEl) stateDescEl.textContent = state.description;
-    if (popEl) popEl.textContent = state.population;
+    if (popEl) {
+      popEl.innerHTML = `${state.population} ${this.liveDataEngine.renderSourceBadge(state._liveMeta?.population)}`;
+    }
     if (areaEl) areaEl.textContent = state.area;
     if (distEl) distEl.textContent = state.districts;
     if (capEl) capEl.textContent = state.capital;
@@ -739,7 +743,8 @@ class IndiaLandApp {
   // ==========================================
   // SCREEN 7: ENVIRONMENTAL MONITORING
   // ==========================================
-  renderEnvironmentalScreen(stateKey) {
+  async renderEnvironmentalScreen(stateKey) {
+    await this.environmentalEngine.refreshLiveFireHotspots();
     const ndviTrend = this.environmentalEngine.getNDVITrend(stateKey);
     const waterMetrics = this.environmentalEngine.getWaterBodyMetrics(stateKey);
 
@@ -974,22 +979,38 @@ class IndiaLandApp {
     }, 150);
   }
 
+  autoSetConfidenceThreshold() {
+    const meanEl = document.getElementById('aiMeanConfVal');
+    if (meanEl) {
+      const meanConf = parseFloat(meanEl.textContent) || 90;
+      let suggested = Math.floor((meanConf - 5) / 5) * 5;
+      suggested = Math.max(0, Math.min(95, suggested));
+      
+      const slider = document.getElementById('aiConfidenceSlider');
+      if (slider) slider.value = suggested;
+      
+      this.updateConfidenceThreshold(suggested);
+    }
+  }
+
   renderLulcClassBreakdown(breakdown) {
     const container = document.getElementById('aiLulcClassGrid');
     if (!container || !breakdown) return;
 
     container.innerHTML = '';
+    const orderedClasses = ['barren', 'urban', 'water', 'forest', 'agriculture', 'wetland', 'uncertain'];
     const colorMap = {
       barren: '#a0a0a0',
-      agriculture: '#ffd700',
-      forest: '#228b22',
       urban: '#dc143c',
       water: '#1e90ff',
+      forest: '#228b22',
+      agriculture: '#ffd700',
       wetland: '#9400d3',
       uncertain: '#4b5563'
     };
 
-    Object.keys(breakdown).forEach(className => {
+    orderedClasses.forEach(className => {
+      if (!breakdown[className]) return;
       const data = breakdown[className];
       const isUncertain = className.toLowerCase() === 'uncertain';
       const color = colorMap[className.toLowerCase()] || '#000000';

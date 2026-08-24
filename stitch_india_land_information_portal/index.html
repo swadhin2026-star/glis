@@ -57,8 +57,8 @@
     </div>
 
     <!-- Right Side Help Button -->
-    <div class="hero-team-badge" onclick="alert('Help documentation coming soon!')" style="cursor: pointer; bottom: 2.25rem; left: auto; right: 2.5rem;"
-      title="Click for Help">
+    <div class="hero-team-badge" onclick="alert('Help documentation coming soon!')"
+      style="cursor: pointer; bottom: 2.25rem; left: auto; right: 2.5rem;" title="Click for Help">
       <span class="hero-team-dot" style="background: #ef4444; box-shadow: 0 0 8px #ef4444;"></span>
       <span class="hero-team-text">HELP</span>
     </div>
@@ -1218,6 +1218,7 @@
                     oninput="window.app.updateConfidenceThreshold(this.value)">
                   <span id="aiConfidenceValText"
                     style="font-size:0.75rem; font-weight:700; font-family:var(--font-mono); width:45px; text-align:right; color:#166534;">0%</span>
+                  <button onclick="window.app.autoSetConfidenceThreshold()" style="margin-left:8px; padding:2px 8px; font-size:0.7rem; cursor:pointer; background-color:#dcfce7; border:1px solid #22c55e; border-radius:4px; color:#166534; font-weight:bold;">Auto</button>
                 </div>
               </div>
 
@@ -1649,6 +1650,7 @@
   <script src="js/adminEngine.js"></script>
   <script src="js/galaxyShader.js"></script>
   <script src="js/heroGlobe.js"></script>
+  <script src="js/liveDataEngine.js"></script>
   <script src="js/app.js"></script>
 
 </body>

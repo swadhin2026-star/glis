@@ -86,23 +86,37 @@ class ReportEngine {
     }
   }
 
-  downloadStateCSV() {
+  async downloadStateCSV() {
+    if (window.app) {
+      window.app.showToast("Compiling Master CSV with processed data...");
+    }
+
     const headers = ["State Name", "Code", "Zone", "Capital", "Population", "Area", "Districts", "Agri %", "Forest %", "Built %", "Water %", "Barren %", "Source"];
-    const rows = Object.values(stateDatabase).map(s => [
-      `"${s.name}"`,
-      `"${s.code}"`,
-      `"${s.zone}"`,
-      `"${s.capital}"`,
-      `"${s.population}"`,
-      `"${s.area}"`,
-      s.districts,
-      s.land.agriculture,
-      s.land.forest,
-      s.land.built,
-      s.land.water,
-      s.land.barren,
-      `"${s.landUseSource}"`
-    ]);
+    const rows = [];
+
+    for (const key of Object.keys(stateDatabase)) {
+      let s = stateDatabase[key];
+      // Use live data if the engine is available
+      if (window.app && window.app.liveDataEngine) {
+        s = (await window.app.liveDataEngine.getStateProfile(key)) || s;
+      }
+      
+      rows.push([
+        `"${s.name}"`,
+        `"${s.code}"`,
+        `"${s.zone}"`,
+        `"${s.capital}"`,
+        `"${s.population}"`,
+        `"${s.area}"`,
+        s.districts,
+        s.land.agriculture,
+        s.land.forest,
+        s.land.built,
+        s.land.water,
+        s.land.barren,
+        `"${s.landUseSource}"`
+      ]);
+    }
 
     const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });

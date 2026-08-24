@@ -179,8 +179,15 @@ def train_lulc_unet(args, device):
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=num_workers)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=num_workers)
 
-    # Compute inverse frequency class weights to balance rare classes
-    ce_weights = compute_class_weights(train_dataset, num_classes=len(LULC_CLASSES)).to(device)
+    # Compute inverse frequency class weights to balance rare classes (clipped to
+    # avoid over-emphasizing extremely rare classes like 'urban' in small datasets)
+    ce_weights, class_freqs = compute_class_weights(
+        train_dataset,
+        num_classes=len(LULC_CLASSES),
+        weight_clip=tuple(args.weight_clip) if args.weight_clip else None,
+        return_freqs=True,
+    )
+    ce_weights = ce_weights.to(device)
 
     # 3. Model, Loss, Metrics Tracker
     model = build_unet_resnet34(
@@ -275,7 +282,8 @@ def train_lulc_unet(args, device):
                     "pixel_accuracy": val_metrics["pixel_accuracy"],
                     "in_channels": args.in_channels,
                     "num_classes": len(LULC_CLASSES),
-                    "img_size": args.img_size
+                    "img_size": args.img_size,
+                    "class_freqs": class_freqs.tolist()
                 }, best_model_path)
                 print(f"    [BEST] New Best Model Saved -> {best_model_path.name} (Val mIoU: {best_mIoU:.4f})")
 
@@ -346,7 +354,8 @@ def train_lulc_unet(args, device):
                     "pixel_accuracy": val_metrics["pixel_accuracy"],
                     "in_channels": args.in_channels,
                     "num_classes": len(LULC_CLASSES),
-                    "img_size": args.img_size
+                    "img_size": args.img_size,
+                    "class_freqs": class_freqs.tolist()
                 }, best_model_path)
                 print(f"    [BEST] New Best Model Saved -> {best_model_path.name} (Val mIoU: {best_mIoU:.4f})")
             else:
@@ -365,7 +374,8 @@ def train_lulc_unet(args, device):
         "mIoU": history["val_mIoU"][-1] if history["val_mIoU"] else 0.0,
         "in_channels": args.in_channels,
         "num_classes": len(LULC_CLASSES),
-        "img_size": args.img_size
+        "img_size": args.img_size,
+        "class_freqs": class_freqs.tolist()
     }, last_model_path)
 
     # 4. Generate Visual Plots & Evaluation Reports
@@ -573,6 +583,9 @@ def main():
                         help="Learning rate for pretrained ResNet34 backbone in Phase 2 (default: 1e-5)")
     parser.add_argument("--patience", type=int, default=6,
                         help="Early stopping patience on validation mIoU (default: 6)")
+    parser.add_argument("--weight-clip", type=float, nargs=2, default=[0.5, 3.0], metavar=("MIN", "MAX"),
+                        help="Min/max bounds for inverse-frequency class loss weights, prevents over-emphasis "
+                             "of extremely rare classes (default: 0.5 3.0). Pass e.g. --weight-clip 0 100 to disable.")
     parser.add_argument("--device", type=str, default="auto", choices=["auto", "cuda", "cpu"],
                         help="Hardware device (default: auto)")
 

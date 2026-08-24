@@ -25,19 +25,19 @@ from PIL import Image
 
 LULC_CLASSES = [
     "barren",       # 0: Bare soil, sand, rocks, background
-    "agriculture",  # 1: Cropland, farmlands, paddy
-    "forest",       # 2: Dense forest, trees, wooded areas
-    "urban",        # 3: Built-up, settlements, buildings, roads
-    "water",        # 4: Rivers, lakes, ponds, reservoirs
+    "urban",        # 1: Built-up, settlements, buildings, roads
+    "water",        # 2: Rivers, lakes, ponds, reservoirs
+    "forest",       # 3: Dense forest, trees, wooded areas
+    "agriculture",  # 4: Cropland, farmlands, paddy
     "wetland",      # 5: Marshland, wetlands, mangrove, scrub
 ]
 
 LULC_COLOR_MAP = {
     0: (160, 160, 160),  # Barren: Gray / Tan
-    1: (255, 215, 0),    # Agriculture: Yellow / Gold
-    2: (34, 139, 34),    # Forest: Forest Green
-    3: (220, 20, 60),    # Urban: Crimson Red
-    4: (30, 144, 255),   # Water: Deep Sky Blue
+    1: (220, 20, 60),    # Urban: Crimson Red
+    2: (30, 144, 255),   # Water: Deep Sky Blue
+    3: (34, 139, 34),    # Forest: Forest Green
+    4: (255, 215, 0),    # Agriculture: Yellow / Gold
     5: (148, 0, 211),    # Wetland: Violet / Purple
 }
 
@@ -62,13 +62,12 @@ def rgb_to_class_mask(rgb_mask: np.ndarray, color_dict: Optional[Dict[int, Tuple
     palette = color_dict or LULC_COLOR_MAP
     
     # Custom color presets (e.g. from class_dict_seg.csv)
-    # urban:(0,255,255), water:(0,0,255), forest:(0,255,0), agriculture:(255,255,0), road:(255,0,255)
     custom_colors = {
         0: (0, 0, 0),        # barren / background
-        1: (255, 255, 0),    # agriculture
-        2: (0, 255, 0),      # forest
-        3: (0, 255, 255),    # urban
-        4: (0, 0, 255),      # water
+        1: (0, 255, 255),    # urban
+        2: (0, 0, 255),      # water
+        3: (0, 255, 0),      # forest
+        4: (255, 255, 0),    # agriculture
         5: (255, 0, 255),    # road / wetland
     }
 
@@ -212,10 +211,24 @@ class SentinelLULCDataset(Dataset):
 # 4. Dataset Utilities: Class Weights & Dataset Inspection
 # ==============================================================================
 
-def compute_class_weights(dataset: Dataset, num_classes: int = 6, max_samples: int = 200) -> torch.Tensor:
+def compute_class_weights(
+    dataset: Dataset,
+    num_classes: int = 6,
+    max_samples: int = 200,
+    weight_clip: Optional[Tuple[float, float]] = (0.5, 3.0),
+    return_freqs: bool = False,
+):
     """
     Computes smooth inverse frequency weights for Cross-Entropy to counter class imbalance:
     w_c = 1 / ln(1.02 + f_c), normalized so mean(w) = 1.0.
+
+    weight_clip: (min, max) bounds applied after normalization. Without clipping, a class
+    that is extremely rare in the training masks (e.g. a handful of 'urban' pixels) can get
+    a very large weight, which pushes the model to over-predict that class on ambiguous
+    terrain just to reduce loss. Clipping keeps rare-class emphasis reasonable.
+
+    return_freqs: if True, also returns the raw per-class pixel frequency array so it can be
+    stored in the training checkpoint and used later for inference-time bias correction.
     """
     print(f"[*] Analyzing class pixel distribution over {min(len(dataset), max_samples)} patches ...")
     counts = np.zeros(num_classes, dtype=np.int64)
@@ -229,15 +242,46 @@ def compute_class_weights(dataset: Dataset, num_classes: int = 6, max_samples: i
 
     total_pixels = np.sum(counts)
     if total_pixels == 0:
-        return torch.ones(num_classes, dtype=torch.float32)
+        weights = np.ones(num_classes, dtype=np.float32)
+        freqs = np.zeros(num_classes, dtype=np.float32)
+    else:
+        freqs = counts / total_pixels
+        # Smooth inverse frequency
+        weights = 1.0 / np.log(1.02 + freqs)
+        weights = weights / np.mean(weights)  # Normalize mean to 1.0
 
-    freqs = counts / total_pixels
-    # Smooth inverse frequency
-    weights = 1.0 / np.log(1.02 + freqs)
-    weights = weights / np.mean(weights)  # Normalize mean to 1.0
+        if weight_clip is not None:
+            lo, hi = weight_clip
+            weights = np.clip(weights, lo, hi)
+            weights = weights / np.mean(weights)  # Re-normalize after clipping
 
     print("[*] Class Distribution & Computed Loss Weights:")
     for i, name in enumerate(LULC_CLASSES[:num_classes]):
         print(f"    - {name:<12}: {freqs[i]*100:6.2f}% of pixels | Loss Weight: {weights[i]:.3f}")
 
-    return torch.tensor(weights, dtype=torch.float32)
+    weights_t = torch.tensor(weights, dtype=torch.float32)
+    if return_freqs:
+        return weights_t, freqs.astype(np.float32)
+    return weights_t
+
+
+def compute_logit_bias(class_freqs, num_classes: int = 6, strength: float = 1.0) -> np.ndarray:
+    """
+    Computes a per-class logit bias to counteract inverse-frequency loss weighting at
+    inference time. Classes that were rare in training (and thus heavily upweighted during
+    training) get their logits pulled down; common classes get pulled up slightly. This
+    reduces the tendency to over-predict rare classes (e.g. 'urban') on ambiguous terrain.
+
+    strength: 0.0 disables correction entirely; 1.0 is the standard log-prior correction.
+    """
+    if class_freqs is None:
+        return np.zeros(num_classes, dtype=np.float32)
+
+    freqs = np.array(class_freqs, dtype=np.float32)
+    if freqs.shape[0] != num_classes or np.sum(freqs) <= 0:
+        return np.zeros(num_classes, dtype=np.float32)
+
+    freqs = np.clip(freqs, 1e-6, None)
+    bias = -strength * np.log(freqs)
+    bias = bias - np.mean(bias)  # zero-centered so overall confidence scale is unaffected
+    return bias.astype(np.float32)

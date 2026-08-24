@@ -34,6 +34,7 @@ from lulc_dataset import (
     LULC_CLASSES,
     LULC_COLOR_MAP,
     mask_to_rgb,
+    compute_logit_bias,
     IMAGENET_MEAN,
     IMAGENET_STD
 )
@@ -52,6 +53,7 @@ def load_model(model_path: Path, device: torch.device):
     in_channels = checkpoint.get("in_channels", 4)
     num_classes = checkpoint.get("num_classes", len(LULC_CLASSES))
     img_size = checkpoint.get("img_size", 256)
+    class_freqs = checkpoint.get("class_freqs", None)  # per-class training pixel frequency, if saved
 
     model = build_unet_resnet34(
         in_channels=in_channels,
@@ -66,7 +68,11 @@ def load_model(model_path: Path, device: torch.device):
     if best_mIoU is not None:
         print(f"[OK] Loaded model checkpoint (Best Val mIoU: {best_mIoU:.4f}, Epoch {checkpoint.get('epoch', '?')})")
 
-    return model, in_channels, num_classes, img_size
+    if class_freqs is None:
+        print("[!] Checkpoint has no saved class_freqs (older checkpoint) - inference-time bias "
+              "correction is unavailable until you retrain. Predictions will use raw logits.")
+
+    return model, in_channels, num_classes, img_size, class_freqs
 
 
 def preprocess_image(image_path: Path, in_channels: int, img_size: int = 256) -> Tuple[torch.Tensor, np.ndarray]:
@@ -95,7 +101,8 @@ def preprocess_image(image_path: Path, in_channels: int, img_size: int = 256) ->
 def predict_lulc(
     image_path: str,
     model_path: Path = MODELS_DIR / "unet_resnet34_lulc_best.pth",
-    output_path: Optional[Path] = None
+    output_path: Optional[Path] = None,
+    bias_strength: float = 1.0
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     image_path = Path(image_path)
@@ -105,13 +112,22 @@ def predict_lulc(
         return
 
     # 1. Load model & preprocess image
-    model, in_channels, num_classes, img_size = load_model(model_path, device)
+    model, in_channels, num_classes, img_size, class_freqs = load_model(model_path, device)
     img_tensor, rgb_display = preprocess_image(image_path, in_channels, img_size=img_size)
     img_tensor = img_tensor.to(device)
 
     # 2. Forward pass
     with torch.no_grad():
         logits = model(img_tensor)
+
+        # Counteract inverse-frequency training loss weighting: rare classes (e.g. 'urban'
+        # in a small dataset) were heavily upweighted during training, which can make the
+        # model over-predict them on ambiguous terrain. This subtracts a log-prior bias.
+        bias = compute_logit_bias(class_freqs, num_classes=num_classes, strength=bias_strength)
+        if np.any(bias):
+            bias_t = torch.tensor(bias, dtype=logits.dtype, device=logits.device).view(1, -1, 1, 1)
+            logits = logits + bias_t
+
         probs = F.softmax(logits, dim=1).squeeze(0).cpu().numpy()  # [C, H, W]
         pred_mask = np.argmax(probs, axis=0)                     # [H, W]
 
@@ -194,17 +210,20 @@ def main():
     parser.add_argument("--model", type=str, default=str(MODELS_DIR / "unet_resnet34_lulc_best.pth"),
                         help="Path to trained U-Net checkpoint (.pth)")
     parser.add_argument("--output", type=str, help="Path to save prediction plot (.png)")
+    parser.add_argument("--bias-strength", type=float, default=1.0,
+                        help="Strength of inference-time class-prior bias correction, 0 disables it "
+                             "(default: 1.0). Requires a checkpoint trained with class_freqs saved.")
 
     args = parser.parse_args()
 
     if args.image:
-        predict_lulc(args.image, Path(args.model), Path(args.output) if args.output else None)
+        predict_lulc(args.image, Path(args.model), Path(args.output) if args.output else None, bias_strength=args.bias_strength)
     else:
         # Check for sample test image in data directory
         test_imgs = sorted(list((DATA_DIR / "segmentation").glob("**/test_image/*.*")))
         if test_imgs:
             print(f"[*] No --image provided. Running inference on sample test patch: {test_imgs[0].name}")
-            predict_lulc(str(test_imgs[0]), Path(args.model), Path(args.output) if args.output else None)
+            predict_lulc(str(test_imgs[0]), Path(args.model), Path(args.output) if args.output else None, bias_strength=args.bias_strength)
         else:
             print("[!] Please provide an image to predict: python predict.py --image path/to/image.jpg")
 

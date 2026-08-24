@@ -67,13 +67,13 @@ AI_ENGINE_AVAILABLE = False
 _IMPORT_ERROR_MSG = None
 
 # Default class definitions and color maps
-LULC_CLASSES = ["barren", "agriculture", "forest", "urban", "water", "wetland"]
+LULC_CLASSES = ["barren", "urban", "water", "forest", "agriculture", "wetland"]
 LULC_COLOR_MAP = {
     0: (160, 160, 160),  # Barren: Gray / Tan
-    1: (255, 215, 0),    # Agriculture: Yellow / Gold
-    2: (34, 139, 34),    # Forest: Forest Green
-    3: (220, 20, 60),    # Urban: Crimson Red
-    4: (30, 144, 255),   # Water: Deep Sky Blue
+    1: (220, 20, 60),    # Urban: Crimson Red
+    2: (30, 144, 255),   # Water: Deep Sky Blue
+    3: (34, 139, 34),    # Forest: Forest Green
+    4: (255, 215, 0),    # Agriculture: Yellow / Gold
     5: (148, 0, 211),    # Wetland: Violet / Purple
 }
 
@@ -84,11 +84,20 @@ try:
     import torch.nn.functional as F
     from models_unet import build_unet_resnet34
     from predict import load_model, preprocess_image, predict_lulc
-    from lulc_dataset import LULC_CLASSES, LULC_COLOR_MAP, mask_to_rgb
+    from lulc_dataset import LULC_CLASSES, LULC_COLOR_MAP, mask_to_rgb, compute_logit_bias
     AI_ENGINE_AVAILABLE = True
 except Exception as _e:
     AI_ENGINE_AVAILABLE = False
     _IMPORT_ERROR_MSG = str(_e)
+
+# Live external data connectors (population, LULC, fire hotspots, boundaries).
+# This import must never crash server startup even if the module has issues.
+try:
+    import live_data_service as live_data
+    LIVE_DATA_AVAILABLE = True
+except Exception as _e2:
+    LIVE_DATA_AVAILABLE = False
+    live_data = None
 
 # Global model cache for fast API response
 _MODEL_CACHE = {
@@ -97,7 +106,8 @@ _MODEL_CACHE = {
     "in_channels": 4,
     "num_classes": 6,
     "img_size": 256,
-    "mtime": 0
+    "mtime": 0,
+    "class_freqs": None
 }
 
 
@@ -118,13 +128,14 @@ def get_loaded_model(force_reload=False):
         return _MODEL_CACHE["model"], _MODEL_CACHE["device"]
 
     try:
-        model, in_c, n_cls, img_sz = load_model(model_path, device)
+        model, in_c, n_cls, img_sz, class_freqs = load_model(model_path, device)
         _MODEL_CACHE["model"] = model
         _MODEL_CACHE["device"] = device
         _MODEL_CACHE["in_channels"] = in_c
         _MODEL_CACHE["num_classes"] = n_cls
         _MODEL_CACHE["img_size"] = img_sz
         _MODEL_CACHE["mtime"] = current_mtime
+        _MODEL_CACHE["class_freqs"] = class_freqs
         print(f"[OK] Model checkpoint successfully loaded on {device} (Weights: {model_path.name})")
     except Exception as e:
         print(f"[!] Error loading model checkpoint: {e}")
@@ -159,6 +170,27 @@ class LandPortalRequestHandler(SimpleHTTPRequestHandler):
             if not self._check_api_key():
                 return
             self.handle_api_samples()
+            return
+
+        # LIVE DATA: which external sources are actually configured
+        if path == "/api/live/status":
+            if not self._check_api_key():
+                return
+            self.handle_live_status()
+            return
+
+        # LIVE DATA: population + LULC for one state, with fallback flag
+        if path == "/api/live/state":
+            if not self._check_api_key():
+                return
+            self.handle_live_state(parsed)
+            return
+
+        # LIVE DATA: real-time forest fire hotspots (NASA FIRMS)
+        if path == "/api/live/fires":
+            if not self._check_api_key():
+                return
+            self.handle_live_fires()
             return
 
         # Everything else must be static content under an explicitly
@@ -282,6 +314,55 @@ class LandPortalRequestHandler(SimpleHTTPRequestHandler):
 
         self._send_json(status_data)
 
+    def handle_live_status(self):
+        """Reports which live external data sources are actually configured."""
+        if not LIVE_DATA_AVAILABLE:
+            self._send_json({"live_data_enabled": False, "reason": "live_data_service.py not importable"}, 200)
+            return
+        self._send_json({"live_data_enabled": True, "sources": live_data.get_live_sources_status()})
+
+    def handle_live_state(self, parsed):
+        """
+        GET /api/live/state?name=gujarat
+        Tries live population + LULC fetch. Returns fallback=True when a
+        field could not be fetched live, so the frontend knows to keep
+        using its local stateDatabase value for that field.
+        """
+        from urllib.parse import parse_qs
+        qs = parse_qs(parsed.query)
+        state_name = (qs.get("name", [""])[0]).strip()
+
+        if not state_name:
+            self._send_json({"error": "Missing required query param: name"}, 400)
+            return
+
+        if not LIVE_DATA_AVAILABLE:
+            self._send_json({"fallback": True, "reason": "live_data_service unavailable"}, 200)
+            return
+
+        population = live_data.fetch_live_population(state_name)
+        lulc = live_data.fetch_live_lulc(state_name)
+
+        self._send_json({
+            "state": state_name,
+            "population": population,          # None if not configured/fetch failed
+            "lulc": lulc,                       # None if not configured/fetch failed
+            "population_fallback": population is None,
+            "lulc_fallback": lulc is None,
+        })
+
+    def handle_live_fires(self):
+        """GET /api/live/fires — real-time NASA FIRMS hotspots, or fallback flag."""
+        if not LIVE_DATA_AVAILABLE:
+            self._send_json({"fallback": True, "hotspots": []})
+            return
+
+        hotspots = live_data.fetch_live_fire_hotspots(country="IND", days=1)
+        self._send_json({
+            "fallback": hotspots is None,
+            "hotspots": hotspots or [],
+        })
+
     def handle_api_samples(self):
         test_dir = DATA_DIR / "segmentation" / "test_image"
         samples = []
@@ -359,6 +440,19 @@ class LandPortalRequestHandler(SimpleHTTPRequestHandler):
 
             with torch.no_grad():
                 logits = model(tensor)
+
+                # Counteract inverse-frequency training loss weighting, which can push the
+                # model to over-predict rare classes (e.g. 'urban') on ambiguous terrain.
+                bias_strength = float(payload.get("bias_strength", 1.0))
+                bias = compute_logit_bias(
+                    _MODEL_CACHE["class_freqs"],
+                    num_classes=_MODEL_CACHE["num_classes"],
+                    strength=bias_strength
+                )
+                if np.any(bias):
+                    bias_t = torch.tensor(bias, dtype=logits.dtype, device=logits.device).view(1, -1, 1, 1)
+                    logits = logits + bias_t
+
                 probs = F.softmax(logits, dim=1)
                 conf_scores, preds = torch.max(probs, dim=1)
                 conf_scores = conf_scores.squeeze(0).cpu().numpy()
@@ -423,6 +517,7 @@ class LandPortalRequestHandler(SimpleHTTPRequestHandler):
                 "mean_confidence": round(mean_conf, 2),
                 "confidence_coverage": round(conf_coverage, 2),
                 "class_breakdown": class_stats,
+                "bias_correction_applied": _MODEL_CACHE["class_freqs"] is not None and bias_strength != 0,
                 "mask_url": f"/models/{mask_filename}",
                 "prediction_plot_url": f"/models/prediction_{target_path.stem}.png" if (MODELS_DIR / f"prediction_{target_path.stem}.png").exists() else None
             }

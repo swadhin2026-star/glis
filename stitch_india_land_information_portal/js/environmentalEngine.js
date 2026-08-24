@@ -6,12 +6,40 @@
 
 class EnvironmentalEngine {
   constructor() {
+    // Static reference hotspots — used ONLY when the live NASA FIRMS feed
+    // (via LiveDataEngine -> /api/live/fires) is unavailable or unconfigured.
     this.fireHotspots = [
       { id: "FIRE-HOT-01", state: "Madhya Pradesh", district: "Panna", lat: 24.72, lng: 80.19, confidence: "96%", brightness: "342 K", detectedTime: "2 hrs ago", severity: "Moderate" },
       { id: "FIRE-HOT-02", state: "Odisha", district: "Mayurbhanj", lat: 21.93, lng: 86.74, confidence: "98%", brightness: "368 K", detectedTime: "45 mins ago", severity: "Severe" },
       { id: "FIRE-HOT-03", state: "Chhattisgarh", district: "Bastar", lat: 19.07, lng: 81.95, confidence: "91%", brightness: "331 K", detectedTime: "4 hrs ago", severity: "Low" },
       { id: "FIRE-HOT-04", state: "Uttarakhand", district: "Nainital", lat: 29.38, lng: 79.46, confidence: "94%", brightness: "355 K", detectedTime: "1 hr ago", severity: "High" }
     ];
+    this.liveDataEngine = (typeof LiveDataEngine !== "undefined") ? new LiveDataEngine() : null;
+    this._isLiveFireData = false;
+  }
+
+  /**
+   * Call this once when the Environmental screen opens. Tries to replace
+   * this.fireHotspots with real NASA FIRMS data; keeps the static list on
+   * any failure. Returns true if live data was applied.
+   */
+  async refreshLiveFireHotspots() {
+    if (!this.liveDataEngine) return false;
+    const live = await this.liveDataEngine.getLiveFireHotspots();
+    if (live && live.length > 0) {
+      this.fireHotspots = live.map((h, i) => ({
+        id: `FIRE-LIVE-${i + 1}`,
+        state: h.state || "—",
+        district: h.district || "—",
+        lat: h.lat, lng: h.lng,
+        confidence: h.confidence, brightness: h.brightness,
+        detectedTime: h.detectedTime, severity: h.severity
+      }));
+      this._isLiveFireData = true;
+      return true;
+    }
+    this._isLiveFireData = false;
+    return false;
   }
 
   getNDVITrend(stateKey = "kerala") {

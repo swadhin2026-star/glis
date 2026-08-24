@@ -553,7 +553,7 @@ class GISMapEngine {
             fillColor: '#000000',
             fillOpacity: this.currentOverlayOpacity * 0.15,
             opacity: this.currentOverlayOpacity,
-            weight: 1.5,
+            weight: 6.0,
             className: 'animated-state-boundary'
           }
         });
@@ -661,7 +661,7 @@ class GISMapEngine {
                   fillColor: overlayColor, 
                   fillOpacity: this.currentOverlayOpacity * 0.3, 
                   opacity: this.currentOverlayOpacity,
-                  weight: 1.2 
+                  weight: 4.5 
                 }
               });
               shape.bindTooltip(`${state.name} ${overlayKey.toUpperCase()} Layer Active`, { permanent: false });
