@@ -25,6 +25,9 @@ class IndiaLandApp {
     this.currentHelpTopic = 'all';
     this.currentHelpQuery = '';
     this.expandedHelpIds = new Set();
+    // AI Satellite Studio State
+    this.currentAiStateKey = 'gujarat';
+    this.customUploadedTiles = [];
   }
 
   async init() {
@@ -1285,19 +1288,244 @@ class IndiaLandApp {
   // AI SATELLITE ML LAB & PYTORCH U-NET INFERENCE
   // ==========================================
   async setupAiEngine() {
-    this.currentAiSample = 'data/segmentation/test_image/Test_1.jpg';
+    this.currentAiSample = '/data/segmentation/test_image/Test_1.jpg';
     this.currentAiBase64 = null;
+    this.currentAiStateKey = 'gujarat';
+
+    // Populate State Selector Dropdown in AI Studio
+    this.populateAiStateSelector();
 
     try {
       const status = await this.aiEngine.checkStatus();
       this.updateAiTelemetryUI(status);
-      const samples = await this.aiEngine.fetchSamples();
-      if (samples && samples.length > 0) {
-        this.renderAiSampleGallery(samples);
-      }
+      await this.aiEngine.fetchSamples();
     } catch (e) {
       console.warn("AI Engine setup warning:", e);
     }
+
+    // Dynamic randomization on every page load / refresh
+    this.initRandomizedStateSatellite();
+  }
+
+  populateAiStateSelector() {
+    const dropdown = document.getElementById('aiStateSelectDropdown');
+    if (!dropdown) return;
+
+    dropdown.innerHTML = '';
+    const stateKeys = Object.keys(stateDatabase);
+    stateKeys.forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.textContent = `${stateDatabase[k].name} (${stateDatabase[k].capital || 'State'})`;
+      dropdown.appendChild(opt);
+    });
+
+    dropdown.value = this.currentAiStateKey;
+  }
+
+  initRandomizedStateSatellite() {
+    const presetKeys = Object.keys(stateSatelliteDatabase);
+    const randomKey = presetKeys[Math.floor(Math.random() * presetKeys.length)] || 'gujarat';
+    this.currentAiStateKey = randomKey;
+
+    const dropdown = document.getElementById('aiStateSelectDropdown');
+    if (dropdown) dropdown.value = randomKey;
+
+    const stateData = getStateSatelliteTiles(randomKey);
+    const randomTileIndex = Math.floor(Math.random() * stateData.tiles.length);
+
+    const label = document.getElementById('aiCurrentStateNameLabel');
+    const countLabel = document.getElementById('aiZoneCountLabel');
+    if (label) label.textContent = stateData.stateName;
+    if (countLabel) countLabel.textContent = `${stateData.tiles.length} Satellite Zones`;
+
+    this.renderStateSatelliteGallery(randomKey, randomTileIndex);
+    const chosenTile = stateData.tiles[randomTileIndex];
+    if (chosenTile) {
+      this.selectStateSatelliteTile(chosenTile, randomTileIndex);
+    }
+  }
+
+  selectAiState(stateKey) {
+    this.currentAiStateKey = (stateKey || 'gujarat').toLowerCase();
+    const dropdown = document.getElementById('aiStateSelectDropdown');
+    if (dropdown) dropdown.value = this.currentAiStateKey;
+
+    const stateData = getStateSatelliteTiles(this.currentAiStateKey);
+    const label = document.getElementById('aiCurrentStateNameLabel');
+    const countLabel = document.getElementById('aiZoneCountLabel');
+
+    if (label) label.textContent = stateData.stateName;
+    if (countLabel) countLabel.textContent = `${stateData.tiles.length} Satellite Zones`;
+
+    this.renderStateSatelliteGallery(this.currentAiStateKey, 0);
+    if (stateData.tiles.length > 0) {
+      this.selectStateSatelliteTile(stateData.tiles[0], 0);
+    }
+    this.showToast(`Loaded ${stateData.stateName} Satellite Imagery Zones`);
+  }
+
+  randomizeAiSatelliteTile() {
+    const presetKeys = Object.keys(stateSatelliteDatabase);
+    const randomKey = presetKeys[Math.floor(Math.random() * presetKeys.length)];
+    this.currentAiStateKey = randomKey;
+
+    const dropdown = document.getElementById('aiStateSelectDropdown');
+    if (dropdown) dropdown.value = randomKey;
+
+    const stateData = getStateSatelliteTiles(randomKey);
+    const randomTileIndex = Math.floor(Math.random() * stateData.tiles.length);
+
+    const label = document.getElementById('aiCurrentStateNameLabel');
+    const countLabel = document.getElementById('aiZoneCountLabel');
+    if (label) label.textContent = stateData.stateName;
+    if (countLabel) countLabel.textContent = `${stateData.tiles.length} Satellite Zones`;
+
+    this.renderStateSatelliteGallery(randomKey, randomTileIndex);
+    const chosenTile = stateData.tiles[randomTileIndex];
+    if (chosenTile) {
+      this.selectStateSatelliteTile(chosenTile, randomTileIndex);
+      this.showToast(`🎲 Randomized: ${stateData.stateName} - ${chosenTile.title}`);
+    }
+  }
+
+  renderStateSatelliteGallery(stateKey, activeIndex = 0) {
+    const gallery = document.getElementById('aiSampleTileGallery');
+    if (!gallery) return;
+
+    const stateData = getStateSatelliteTiles(stateKey);
+    gallery.innerHTML = '';
+
+    // If user has custom uploaded tiles, display them at the top
+    if (this.customUploadedTiles && this.customUploadedTiles.length > 0) {
+      this.customUploadedTiles.forEach((customTile, cIdx) => {
+        const card = document.createElement('div');
+        card.className = `state-tile-card ${activeIndex === `custom_${cIdx}` ? 'active' : ''}`;
+        card.innerHTML = `
+          <div class="state-tile-thumb-wrap">
+            <img src="${customTile.imagePath || customTile.base64}" alt="${customTile.title}">
+            <span class="state-tile-zone-badge" style="background:#2563eb;">Custom Ingested</span>
+          </div>
+          <div class="state-tile-title">${customTile.title}</div>
+          <div class="state-tile-desc">${customTile.description}</div>
+          <div class="state-tile-meta">
+            <span>Sensor: User Upload / URL</span>
+            <span>Live Patch</span>
+          </div>
+          <div class="state-tile-actions">
+            <button class="btn-process-tile" onclick="event.stopPropagation(); window.app.selectStateSatelliteTile(window.app.customUploadedTiles[${cIdx}], 'custom_${cIdx}', this.closest('.state-tile-card'))">
+              <span>⚡ Process with AI U-Net</span>
+            </button>
+          </div>
+        `;
+        card.onclick = () => this.selectStateSatelliteTile(customTile, `custom_${cIdx}`, card);
+        gallery.appendChild(card);
+      });
+    }
+
+    stateData.tiles.forEach((tile, idx) => {
+      const card = document.createElement('div');
+      card.className = `state-tile-card ${idx === activeIndex ? 'active' : ''}`;
+      card.id = `state_tile_card_${tile.id}`;
+      card.innerHTML = `
+        <div class="state-tile-thumb-wrap">
+          <img src="${tile.imagePath}" alt="${tile.title}" onerror="this.src='/data/segmentation/test_image/Test_1.jpg'">
+          <span class="state-tile-zone-badge">${tile.zoneType}</span>
+        </div>
+        <div class="state-tile-title">${tile.title}</div>
+        <p class="state-tile-desc">${tile.description}</p>
+        <div class="state-tile-meta">
+          <span>${tile.sensor.split(' ')[0]}</span>
+          <span>📅 ${tile.captureDate}</span>
+        </div>
+        <div class="state-tile-actions">
+          <button class="btn-process-tile" onclick="event.stopPropagation(); window.app.selectStateSatelliteTile(getStateSatelliteTiles('${stateKey}').tiles[${idx}], ${idx}, this.closest('.state-tile-card'))">
+            <span>⚡ Process with AI U-Net</span>
+          </button>
+        </div>
+      `;
+      card.onclick = () => this.selectStateSatelliteTile(tile, idx, card);
+      gallery.appendChild(card);
+    });
+  }
+
+  selectStateSatelliteTile(tile, index, cardEl) {
+    if (!tile) return;
+
+    let url = tile.imagePath;
+    if (tile.base64) {
+      url = tile.base64;
+      this.currentAiBase64 = tile.base64;
+      this.currentAiSample = null;
+    } else {
+      this.currentAiSample = tile.imagePath;
+      this.currentAiBase64 = null;
+    }
+
+    document.querySelectorAll('.state-tile-card').forEach(c => c.classList.remove('active'));
+    if (cardEl) {
+      cardEl.classList.add('active');
+    } else {
+      const found = document.getElementById(`state_tile_card_${tile.id}`);
+      if (found) found.classList.add('active');
+    }
+
+    const rawImg = document.getElementById('aiRawPreviewImg');
+    const underlayImg = document.getElementById('aiUnderlayImg');
+
+    if (rawImg) rawImg.src = url;
+    if (underlayImg) underlayImg.src = url;
+
+    this.runAiSegmentation();
+  }
+
+  switchManualAddMode(mode) {
+    const filePane = document.getElementById('manualAddFilePane');
+    const urlPane = document.getElementById('manualAddUrlPane');
+    const btnFile = document.getElementById('btnTabUploadFile');
+    const btnUrl = document.getElementById('btnTabEnterUrl');
+
+    if (mode === 'file') {
+      if (filePane) filePane.style.display = 'block';
+      if (urlPane) urlPane.style.display = 'none';
+      if (btnFile) btnFile.classList.add('active');
+      if (btnUrl) btnUrl.classList.remove('active');
+    } else {
+      if (filePane) filePane.style.display = 'none';
+      if (urlPane) urlPane.style.display = 'block';
+      if (btnFile) btnFile.classList.remove('active');
+      if (btnUrl) btnUrl.classList.add('active');
+      const urlInput = document.getElementById('manualSatelliteUrlInput');
+      if (urlInput) setTimeout(() => urlInput.focus(), 100);
+    }
+  }
+
+  loadManualSatelliteUrl() {
+    const input = document.getElementById('manualSatelliteUrlInput');
+    const url = input?.value?.trim();
+    if (!url) {
+      this.showToast('Please enter a valid satellite image URL');
+      return;
+    }
+
+    const newTile = {
+      id: `custom_url_${Date.now()}`,
+      title: "Custom Web Satellite Raster",
+      zoneType: "Web Ingested",
+      sensor: "Custom URL Raster",
+      imagePath: url,
+      description: `Ingested from ${url.substring(0, 45)}...`,
+      dominantClasses: ["Multi-Spectral"],
+      captureDate: "Live Feed",
+      cloudCover: "0.0%"
+    };
+
+    if (!this.customUploadedTiles) this.customUploadedTiles = [];
+    this.customUploadedTiles.unshift(newTile);
+
+    this.renderStateSatelliteGallery(this.currentAiStateKey, 'custom_0');
+    this.selectStateSatelliteTile(newTile, 'custom_0');
+    this.showToast('Custom satellite URL ingested & processing...');
   }
 
   updateAiTelemetryUI(status) {
@@ -1318,66 +1546,10 @@ class IndiaLandApp {
     }
   }
 
-  renderAiSampleGallery(samples) {
-    const gallery = document.getElementById('aiSampleTileGallery');
-    if (!gallery || !samples || samples.length === 0) return;
-
-    gallery.innerHTML = '';
-    samples.slice(0, 8).forEach((sample, idx) => {
-      const btn = document.createElement('div');
-      btn.className = `tile-sample-btn ${idx === 0 ? 'active' : ''}`;
-      btn.onclick = () => this.selectAiSample(sample.path, sample.relative_url, btn);
-
-      const label = sample.name.replace('.jpg', '').replace('Test_', 'GIS-Tile-').replace('PHOTO-2023-04-08-', 'Map-Raster-');
-      btn.innerHTML = `
-        <img src="${sample.relative_url}" alt="${sample.name}" onerror="this.src='/data/segmentation/test_image/Test_1.jpg'">
-        <span>${label}</span>
-      `;
-      gallery.appendChild(btn);
-    });
-  }
-
-  renderAiSatelliteScreen() {
-    if (!this._aiScreenInitialized) {
-      this._aiScreenInitialized = true;
-      this.runAiSegmentation();
+  renderAiSatelliteScreen(stateKey) {
+    if (stateKey && stateKey !== this.currentAiStateKey) {
+      this.selectAiState(stateKey);
     }
-  }
-
-  selectAiSample(samplePath, relativeUrl, btnEl) {
-    if (typeof relativeUrl === 'object' || typeof relativeUrl === 'undefined') {
-      btnEl = relativeUrl;
-      relativeUrl = undefined;
-    }
-
-    let url = relativeUrl;
-    if (!url) {
-      if (samplePath.includes('data\\segmentation') || samplePath.includes('data/segmentation')) {
-        // Extract the relative path starting from 'data/'
-        const match = samplePath.match(/data[\\/].*/);
-        if (match) {
-          url = '/' + match[0].replace(/\\/g, '/');
-        } else {
-          url = samplePath;
-        }
-      } else {
-        url = samplePath.startsWith('http') || samplePath.startsWith('/') ? samplePath : `/${samplePath.replace(/\\/g, '/')}`;
-      }
-    }
-
-    this.currentAiSample = samplePath;
-    this.currentAiBase64 = null;
-
-    document.querySelectorAll('.tile-sample-btn').forEach(b => b.classList.remove('active'));
-    if (btnEl) btnEl.classList.add('active');
-
-    const rawImg = document.getElementById('aiRawPreviewImg');
-    const underlayImg = document.getElementById('aiUnderlayImg');
-
-    if (rawImg) rawImg.src = url;
-    if (underlayImg) underlayImg.src = url;
-
-    this.runAiSegmentation();
   }
 
   handleCustomImageUpload(event) {
@@ -1386,16 +1558,25 @@ class IndiaLandApp {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      this.currentAiBase64 = e.target.result;
-      this.currentAiSample = null;
+      const base64Data = e.target.result;
+      const customTile = {
+        id: `custom_file_${Date.now()}`,
+        title: file.name.replace(/\.[^/.]+$/, ""),
+        zoneType: "Local Upload",
+        sensor: "Local Aerial Raster",
+        base64: base64Data,
+        description: `Local custom satellite file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`,
+        dominantClasses: ["Custom"],
+        captureDate: "User Import",
+        cloudCover: "0.0%"
+      };
 
-      const rawImg = document.getElementById('aiRawPreviewImg');
-      const underlayImg = document.getElementById('aiUnderlayImg');
-      if (rawImg) rawImg.src = this.currentAiBase64;
-      if (underlayImg) underlayImg.src = this.currentAiBase64;
+      if (!this.customUploadedTiles) this.customUploadedTiles = [];
+      this.customUploadedTiles.unshift(customTile);
 
-      document.querySelectorAll('.tile-sample-btn').forEach(b => b.classList.remove('active'));
-      this.runAiSegmentation();
+      this.renderStateSatelliteGallery(this.currentAiStateKey, 'custom_0');
+      this.selectStateSatelliteTile(customTile, 'custom_0');
+      this.showToast(`Custom satellite file "${file.name}" uploaded and processing...`);
     };
     reader.readAsDataURL(file);
   }

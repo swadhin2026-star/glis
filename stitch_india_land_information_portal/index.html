@@ -460,6 +460,10 @@
                 <h4>Focus State</h4>
                 <select class="state-selector-dropdown form-control"
                   onchange="window.app.selectState(this.value)"></select>
+                <button class="btn-primary" style="width:100%; margin-top:0.6rem; font-size:0.75rem; justify-content:center;"
+                  onclick="window.app.switchScreen('ai_satellite_ml')">
+                  🛰️ State Satellite &amp; AI Studio →
+                </button>
               </div>
 
               <!-- Base Maps -->
@@ -1257,65 +1261,81 @@
 
           <!-- AI Interactive Studio -->
           <div class="ai-studio-grid">
-            <!-- Left: Sample Tile Selector & Custom Upload -->
+            <!-- Left: State Satellite Explorer & Custom Upload -->
             <div class="module-card">
               <div class="card-title-row">
-                <h3>Multi-Layer GIS Map Tile & Raster Selection</h3>
-                <span class="badge-white">Input Source</span>
+                <h3>Multi-Layer GIS Map Tile &amp; Raster Selection</h3>
+                <span class="badge-white" id="aiTileCountBadge">State Satellite Imagery</span>
               </div>
-              <p style="font-size:0.85rem; color:var(--ink-600); margin-bottom:1rem;">Select a spatial base map raster
-                from the GIS tile library or upload custom aerial/map imagery.</p>
+              <p style="font-size:0.85rem; color:var(--ink-600); margin-bottom:1rem;">
+                Explore state-specific satellite imagery rasters (Sentinel-2 / Landsat-9) across India, randomize tiles on demand, or upload / enter custom aerial rasters for instant AI semantic segmentation.
+              </p>
 
-              <label
-                style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--ink-500);">Pre-loaded
-                GIS Map & Raster Tiles (256x256)</label>
+              <!-- State Filter & Randomizer Row -->
+              <div class="satellite-state-filter-row" style="display:flex; gap:0.75rem; align-items:center; margin-bottom:1rem; flex-wrap:wrap;">
+                <div style="flex:1; min-width:200px;">
+                  <label style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--ink-500); display:block; margin-bottom:0.25rem;">Select Indian State</label>
+                  <select id="aiStateSelectDropdown" class="form-control" onchange="window.app.selectAiState(this.value)">
+                    <!-- Populated dynamically with all 36 States/UTs -->
+                  </select>
+                </div>
+                <div style="padding-top:1.15rem;">
+                  <button class="btn-secondary" style="padding:0.45rem 0.9rem; font-size:0.8rem;" onclick="window.app.randomizeAiSatelliteTile()" title="Load random satellite tile">
+                    <span>🎲</span> Random Tile
+                  </button>
+                </div>
+              </div>
+
+              <!-- State Satellite Image Gallery -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <label style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--ink-500);">
+                  State Satellite Imagery Zones (<span id="aiCurrentStateNameLabel">Gujarat</span>)
+                </label>
+                <span id="aiZoneCountLabel" style="font-size:0.72rem; color:var(--ink-400); font-weight:600;">4 Satellite Zones</span>
+              </div>
               <div id="aiSampleTileGallery" class="satellite-tile-gallery">
-                <div class="tile-sample-btn active"
-                  onclick="window.app.selectAiSample('data/segmentation/test_image/Test_1.jpg', this)">
-                  <img src="/data/segmentation/test_image/Test_1.jpg" alt="Tile 1">
-                  <span>Tile 1 (Wetland / Coastal)</span>
+                <!-- Dynamically rendered state satellite tiles with 1-click AI inference -->
+              </div>
+
+              <!-- Manual Satellite Image Addition Options (Upload File OR Enter URL) -->
+              <div class="manual-satellite-add-box" style="margin-top:1.25rem; border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:1rem; background:#fafafa;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                  <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:#000000;">
+                    📥 Manually Add Custom Satellite Image / Tile
+                  </h4>
+                  <span class="badge-white" style="font-size:0.68rem;">Custom Ingestion</span>
                 </div>
-                <div class="tile-sample-btn"
-                  onclick="window.app.selectAiSample('data/segmentation/test_image/Test_2.jpg', this)">
-                  <img src="/data/segmentation/test_image/Test_2.jpg" alt="Tile 2">
-                  <span>Tile 2 (Urban / Agri)</span>
+
+                <!-- Tab toggles for File vs URL -->
+                <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+                  <button id="btnTabUploadFile" class="btn-secondary active" style="flex:1; font-size:0.75rem; padding:0.35rem;" onclick="window.app.switchManualAddMode('file')">📁 Upload Local File</button>
+                  <button id="btnTabEnterUrl" class="btn-secondary" style="flex:1; font-size:0.75rem; padding:0.35rem;" onclick="window.app.switchManualAddMode('url')">🔗 Enter Image URL</button>
                 </div>
-                <div class="tile-sample-btn"
-                  onclick="window.app.selectAiSample('data/segmentation/test_image/PHOTO-2023-04-08-11-31-19.jpg', this)">
-                  <img src="/data/segmentation/test_image/PHOTO-2023-04-08-11-31-19.jpg" alt="Tile 3">
-                  <span>Tile 3 (Dense Forest)</span>
+
+                <!-- Mode 1: File Dropzone -->
+                <div id="manualAddFilePane" class="ai-upload-dropzone" onclick="document.getElementById('aiCustomFileInput').click()">
+                  <svg style="width:24px; height:24px; margin:0 auto 0.35rem; color:var(--ink-400);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <div style="font-weight:700; font-size:0.82rem; color:#000000;">Click or Drop Local Satellite Image / Aerial Patch</div>
+                  <p style="font-size:0.72rem; color:var(--ink-500); margin-top:2px;">Supports JPG, PNG, GeoTIFF, WebP (Auto RGB conversion)</p>
+                  <input type="file" id="aiCustomFileInput" accept="image/*" style="display:none;" onchange="window.app.handleCustomImageUpload(event)">
                 </div>
-                <div class="tile-sample-btn"
-                  onclick="window.app.selectAiSample('data/segmentation/test_image/PHOTO-2023-04-08-11-32-51.jpg', this)">
-                  <img src="/data/segmentation/test_image/PHOTO-2023-04-08-11-32-51.jpg" alt="Tile 4">
-                  <span>Tile 4 (Agri Farmland)</span>
+
+                <!-- Mode 2: URL Input -->
+                <div id="manualAddUrlPane" style="display:none;">
+                  <div style="display:flex; gap:0.5rem;">
+                    <input type="url" id="manualSatelliteUrlInput" class="form-control" style="flex:1; font-size:0.8rem;" placeholder="Paste image or tile URL (e.g. https://.../tile.jpg)">
+                    <button class="btn-primary" style="padding:0.45rem 1rem; font-size:0.8rem; white-space:nowrap;" onclick="window.app.loadManualSatelliteUrl()">Load &amp; Process</button>
+                  </div>
                 </div>
               </div>
 
-              <!-- Drag and Drop Upload -->
-              <div class="ai-upload-dropzone" onclick="document.getElementById('aiCustomFileInput').click()">
-                <svg style="width:28px; height:28px; margin:0 auto 0.5rem; color:var(--ink-400);" fill="none"
-                  stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <div style="font-weight:700; font-size:0.85rem; color:#000000;">Click or Drop Custom GIS Map Tile /
-                  Aerial Raster</div>
-                <p style="font-size:0.75rem; color:var(--ink-500); margin-top:2px;">Supports JPG, PNG, GeoTIFF, WebP
-                  (Automated multi-band RGB normalization)</p>
-                <input type="file" id="aiCustomFileInput" accept="image/*" style="display:none;"
-                  onchange="window.app.handleCustomImageUpload(event)">
-              </div>
-
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
-                <div id="aiInferenceTimeBadge" style="font-size:0.75rem; font-weight:700; color:var(--ink-600);">Ready
-                  for Neural Inference</div>
-                <button id="btnRunAiSegmentation" class="btn-primary" style="height:44px; padding:0 1.5rem;"
-                  onclick="window.app.runAiSegmentation()">
-                  <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M13 10V3L4 14h7v7l9-11h-7z" />
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.25rem;">
+                <div id="aiInferenceTimeBadge" style="font-size:0.75rem; font-weight:700; color:var(--ink-600);">Ready for Neural Inference</div>
+                <button id="btnRunAiSegmentation" class="btn-primary" style="height:42px; padding:0 1.4rem;" onclick="window.app.runAiSegmentation()">
+                  <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                   Run PyTorch U-Net Inference
                 </button>
@@ -1861,6 +1881,7 @@
   <script src="js/soilEngine.js"></script>
   <script src="js/environmentalEngine.js"></script>
   <script src="js/aiEngine.js"></script>
+  <script src="js/satelliteData.js"></script>
   <script src="js/socioEconomicEngine.js"></script>
   <script src="js/reportEngine.js"></script>
   <script src="js/adminEngine.js"></script>
