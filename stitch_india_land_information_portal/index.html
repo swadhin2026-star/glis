@@ -15,10 +15,6 @@
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-  <!-- Turf.js for Geospatial Manipulations -->
-  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-
 
   <!-- Application Stylesheets (Separated & Modular Monochrome) -->
   <link rel="stylesheet" href="styles/main.css">
@@ -155,7 +151,13 @@
           </svg>
           AI Spatial ML
         </button>
-
+        <button class="nav-tab-btn" data-screen="socio_economic">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Socio-Eco
+        </button>
         <button class="nav-tab-btn" data-screen="glis_platform">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1315,6 +1317,92 @@
       </section>
 
       <!-- ==========================================================================
+           SCREEN 8: SOCIO-ECONOMIC ANALYSIS
+           ========================================================================== -->
+      <section id="screen_socio_economic" class="screen-view">
+        <div class="module-page-container">
+          <div class="module-header-banner">
+            <div class="module-header-left">
+              <span>DEMOGRAPHIC & ECONOMIC RADAR</span>
+              <h2>Socio-Economic & Nighttime Radiance Analysis</h2>
+              <p>Analyze WorldPop gridded density, NOAA VIIRS nocturnal luminosity, literacy indices, and urban-rural
+                economic transitions.</p>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:center;">
+              <select class="state-selector-dropdown"></select>
+            </div>
+          </div>
+
+          <div class="socio-stat-cards-row">
+            <div class="socio-stat-card">
+              <span>Population Density</span>
+              <h3 id="socioDensity">308 persons/km²</h3>
+            </div>
+            <div class="socio-stat-card">
+              <span>Urban vs Rural Split</span>
+              <h3 id="socioUrban">42.6% Urban / 57.4% Rural</h3>
+            </div>
+            <div class="socio-stat-card">
+              <span>VIIRS Nighttime Radiance</span>
+              <h3 id="socioRadiance">40.5 nW/cm²/sr</h3>
+            </div>
+            <div class="socio-stat-card">
+              <span>State GDP Contribution</span>
+              <h3 id="socioGDP">₹25.6 Lakh Cr</h3>
+            </div>
+          </div>
+
+          <div class="module-grid-2col">
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Economic Freight Corridor Growth</h3>
+                <span class="badge-black">Radiance Trend</span>
+              </div>
+              <p style="font-size:0.85rem; color:var(--ink-600); margin-bottom:1rem;">Correlation between nighttime
+                radiance and industrial production cluster expansion.</p>
+              <div
+                style="padding:1rem; background:var(--ink-50); border-radius:var(--radius-md); border:1px solid var(--border-subtle); margin-bottom:0.75rem;">
+                <strong>Dedicated Freight Corridor (DFC) Logistics Belt</strong>
+                <p style="font-size:0.8rem; color:var(--ink-600);">Radiance Growth: <strong>+14.2% YoY</strong> | High
+                  nocturnal energy output.</p>
+              </div>
+              <div
+                style="padding:1rem; background:var(--ink-50); border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+                <strong>Coastal Maritime Ports (Mundra & Kandla Corridors)</strong>
+                <p style="font-size:0.8rem; color:var(--ink-600);">Radiance Growth: <strong>+19.1% YoY</strong> | 24x7
+                  automated container handling.</p>
+              </div>
+            </div>
+
+            <div class="module-card">
+              <div class="card-title-row">
+                <h3>Human Development & Connectivity Indicators</h3>
+                <span class="badge-white">Census & OGD</span>
+              </div>
+              <div
+                style="display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--ink-100);">
+                <span>Literacy Rate:</span>
+                <strong id="socioLiteracy">78.0%</strong>
+              </div>
+              <div
+                style="display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--ink-100);">
+                <span>Universal Rural Electrification:</span>
+                <strong>99.4% (Saubhagya Scheme)</strong>
+              </div>
+              <div
+                style="display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--ink-100);">
+                <span>BharatNet Optical Fiber Panchayat Connectivity:</span>
+                <strong>72.5% Completed</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:0.75rem 0;">
+                <span>Agricultural Workforce Share:</span>
+                <strong>54.2% of Total Workforce</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ==========================================================================
            SCREEN 9: REPORT BUILDER & INSIGHTS
            ========================================================================== -->
@@ -1547,6 +1635,7 @@
             <a href="javascript:void(0)" onclick="window.app.switchScreen('land_governance')">Cadastral RoR (7/12)</a>
             <a href="javascript:void(0)" onclick="window.app.switchScreen('environmental_monitoring')">Environmental
               NDVI</a>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('socio_economic')">Socio-Economic Radar</a>
             <a href="javascript:void(0)" onclick="window.app.switchScreen('glis_platform')">32 GIS Resources</a>
           </div>
           <div class="footer-col">
@@ -1580,6 +1669,7 @@
   <script src="js/governanceEngine.js"></script>
   <script src="js/environmentalEngine.js"></script>
   <script src="js/aiEngine.js"></script>
+  <script src="js/socioEconomicEngine.js"></script>
   <script src="js/reportEngine.js"></script>
   <script src="js/adminEngine.js"></script>
   <script src="js/galaxyShader.js"></script>
