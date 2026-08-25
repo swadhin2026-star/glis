@@ -30,8 +30,10 @@
        FULLSCREEN HERO WELCOME INTRO SCREEN
        ========================================================================== -->
   <div id="heroIntroOverlay">
-    <canvas id="heroGalaxyCanvas" class="hero-bg-galaxy-canvas"></canvas>
-    <canvas id="heroGlobeCanvas" class="hero-bg-canvas"></canvas>
+    <!-- 3D Globe Morph to Van der Grinten Flat Map (WebGL Three.js) -->
+    <div class="hero-globe-morph-wrapper">
+      <iframe id="heroGlobeMorphFrame" src="globe-morph.html?hex=ffffff&ocean=000000&bg=000000&landOpacity=1&globeOpacity=0.5&density=500" title="Globe Morph 3D & Flat Map" class="hero-globe-morph-iframe" allow="accelerometer; autoplay; encrypted-media; gyroscope;"></iframe>
+    </div>
     <div class="hero-radial-glow"></div>
     <div class="hero-retro-grid"></div>
 

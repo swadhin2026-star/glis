@@ -30,33 +30,33 @@
   pointer-events: none;
 }
 
-/* Background Effects */
-.hero-bg-galaxy-canvas {
+/* Background Globe Morph 3D & Flat Map Container */
+.hero-globe-morph-wrapper {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.75;
+  z-index: 1;
+  overflow: hidden;
+  background: #000000;
+  pointer-events: auto;
 }
 
-.hero-bg-canvas {
+.hero-globe-morph-iframe {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 1;
+  border: none;
+  background: #000000;
+  pointer-events: auto;
 }
 
 .hero-radial-glow {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.95) 70%, #000000 100%);
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04) 0%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0.9) 100%);
   pointer-events: none;
   z-index: 2;
 }
@@ -401,6 +401,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
 }
 
 /* Main Display Typography */
@@ -419,6 +420,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 /* Call-to-Action Shimmer Button (Magic UI Style) */
@@ -429,6 +431,7 @@
   gap: 1.25rem;
   flex-wrap: wrap;
   margin-bottom: 2.5rem;
+  pointer-events: auto;
 }
 
 .btn-magic-get-started {
