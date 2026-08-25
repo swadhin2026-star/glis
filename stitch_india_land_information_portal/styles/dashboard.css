@@ -6,21 +6,36 @@
 /* Hero Banner */
 .glis-hero {
   background: #ffffff;
-  padding: 3.5rem 3rem 3rem;
+  padding: 4.5rem 2rem 4rem;
   border-bottom: 1px solid var(--border-subtle);
   position: relative;
   overflow: hidden;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .glis-hero-container {
-  max-width: 960px;
+  max-width: 900px;
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  animation: heroSlideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes heroSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .glis-hero-content {
@@ -37,7 +52,7 @@
   gap: 0.5rem;
   background: #000000;
   color: #ffffff;
-  padding: 0.35rem 0.9rem;
+  padding: 0.4rem 1rem;
   border-radius: var(--radius-pill);
   font-size: 0.75rem;
   font-weight: 700;
@@ -50,7 +65,7 @@
   font-family: var(--font-display);
   font-size: 3.2rem;
   font-weight: 800;
-  line-height: 1.12;
+  line-height: 1.15;
   color: #000000;
   letter-spacing: -0.03em;
   margin-bottom: 1.25rem;
@@ -67,31 +82,36 @@
   font-size: 1.05rem;
   color: var(--ink-600);
   line-height: 1.6;
-  margin: 0 auto 2rem auto;
-  max-width: 780px;
+  margin: 0 auto 2.25rem auto;
+  max-width: 760px;
 }
 
 /* Hero Search Box */
 .hero-search-wrapper {
   background: #ffffff;
-  padding: 0.4rem;
+  padding: 0.45rem 0.5rem 0.45rem 1rem;
   border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
   border: 2px solid #000000;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   width: 100%;
   max-width: 680px;
-  margin: 0 auto 1.5rem auto;
-  transition: var(--transition-fast);
+  margin: 0 auto 1.75rem auto;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-search-wrapper:focus-within {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
 }
 
 .hero-search-wrapper svg {
   color: #000000;
   width: 20px;
   height: 20px;
-  margin-left: 0.75rem;
+  margin-left: 0.5rem;
 }
 
 .hero-search-wrapper input {
@@ -105,7 +125,7 @@
 }
 
 .hero-search-wrapper button {
-  padding: 0.65rem 1.6rem;
+  padding: 0.7rem 1.75rem;
 }
 
 /* Quick State Chips */
