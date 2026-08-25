@@ -57,10 +57,10 @@
     </div>
 
     <!-- Right Side Help Button -->
-    <div class="hero-team-badge" onclick="alert('Help documentation coming soon!')"
-      style="cursor: pointer; bottom: 2.25rem; left: auto; right: 2.5rem;" title="Click for Help">
-      <span class="hero-team-dot" style="background: #ef4444; box-shadow: 0 0 8px #ef4444;"></span>
-      <span class="hero-team-text">HELP</span>
+    <div class="hero-team-badge" onclick="window.app.showHelpModal()"
+      style="cursor: pointer; bottom: 2.25rem; left: auto; right: 2.5rem;" title="Click for Help & Problem Search">
+      <span class="hero-team-dot" style="background: #22c55e; box-shadow: 0 0 8px #22c55e;"></span>
+      <span class="hero-team-text">HELP &amp; FAQ</span>
     </div>
 
     <div class="hero-intro-content">
@@ -1725,6 +1725,77 @@
       </div>
     </div>
 
+    <!-- ==========================================================================
+         HELP & PROBLEM SEARCH MODAL (Interactive Knowledge Base)
+         ========================================================================== -->
+    <div id="helpModalBackdrop" class="modal-backdrop" onclick="if(event.target===this) window.app.closeHelpModal()">
+      <div class="help-modal-card">
+        <!-- Modal Top Header -->
+        <div class="help-modal-header">
+          <div class="help-modal-title-row">
+            <div class="help-title-left">
+              <div class="help-icon-bubble">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px; height:20px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 style="margin:0; font-family:var(--font-display); font-size:1.25rem; font-weight:800; color:#000000;">
+                  Help &amp; Problem Search Center
+                </h3>
+                <p style="margin:0; font-size:0.78rem; color:var(--ink-500);">
+                  Type your problem, explore guides, or click any solution for direct feature access
+                </p>
+              </div>
+            </div>
+            <button class="help-close-btn" onclick="window.app.closeHelpModal()" title="Close Help (Esc)">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:18px; height:18px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Problem Search Bar -->
+          <div class="help-search-input-wrapper">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px; height:20px; color:#000000; flex-shrink:0;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" id="helpProblemSearchInput"
+              placeholder="Search your problem (e.g. soil types, crop harvesting districts, 7/12 RoR, AI spatial ML, map GIS)..."
+              autocomplete="off" oninput="window.app.filterHelpProblems(this.value)">
+            <button id="helpSearchClearBtn" class="help-search-clear" onclick="window.app.clearHelpSearch()" style="display:none;" title="Clear search">✕</button>
+          </div>
+
+          <!-- Category Quick Filters -->
+          <div class="help-topic-chips" id="helpTopicChips">
+            <button class="help-topic-btn active" data-topic="all" onclick="window.app.selectHelpTopic('all')">All Questions</button>
+            <button class="help-topic-btn" data-topic="soil" onclick="window.app.selectHelpTopic('soil')">🌱 Soil &amp; Crops</button>
+            <button class="help-topic-btn" data-topic="records" onclick="window.app.selectHelpTopic('records')">📜 Land Records 7/12</button>
+            <button class="help-topic-btn" data-topic="map" onclick="window.app.selectHelpTopic('map')">🗺️ Map &amp; GIS</button>
+            <button class="help-topic-btn" data-topic="ai" onclick="window.app.selectHelpTopic('ai')">🤖 AI Spatial ML</button>
+            <button class="help-topic-btn" data-topic="urban" onclick="window.app.selectHelpTopic('urban')">🏢 Urban &amp; FAR</button>
+            <button class="help-topic-btn" data-topic="reports" onclick="window.app.selectHelpTopic('reports')">📊 Reports &amp; CSV</button>
+            <button class="help-topic-btn" data-topic="system" onclick="window.app.selectHelpTopic('system')">⚙️ System &amp; Setup</button>
+          </div>
+        </div>
+
+        <!-- Problem Results / FAQ Accordion -->
+        <div class="help-modal-body" id="helpModalBody">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="help-modal-footer">
+          <div style="font-size:0.78rem; color:var(--ink-500);">
+            💡 <em>Tip: Click any problem to expand the solution and jump directly into the module.</em>
+          </div>
+          <button class="btn-primary" style="padding:0.45rem 1.25rem; font-size:0.8rem;" onclick="window.app.closeHelpModal()">Close Help</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
@@ -1796,6 +1867,7 @@
   <script src="js/galaxyShader.js"></script>
   <script src="js/heroGlobe.js"></script>
   <script src="js/liveDataEngine.js"></script>
+  <script src="js/helpData.js"></script>
   <script src="js/app.js"></script>
 
 </body>

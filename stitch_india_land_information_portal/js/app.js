@@ -21,6 +21,10 @@ class IndiaLandApp {
     this.reportEngine = new ReportEngine();
     this.adminEngine = new AdminDataEngine();
     this.liveDataEngine = new LiveDataEngine();
+    // Help Center State
+    this.currentHelpTopic = 'all';
+    this.currentHelpQuery = '';
+    this.expandedHelpIds = new Set();
   }
 
   async init() {
@@ -32,6 +36,7 @@ class IndiaLandApp {
     this.setupUserAuthHeader();
     this.setupAiEngine();
     this.setupHeroIntro();
+    this.setupHelpModal();
     this.renderStateProfile(this.currentStateKey);
     this.renderAllScreens(this.currentStateKey);
 
@@ -43,6 +48,8 @@ class IndiaLandApp {
       }
       if (e.key === 'Escape') {
         this.closeSearchModal();
+        this.closeHelpModal();
+        this.closeTeamModal();
       }
     });
 
@@ -86,12 +93,174 @@ class IndiaLandApp {
 
   showTeamModal() {
     const modal = document.getElementById('teamModalBackdrop');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+      modal.classList.add('open');
+      modal.classList.add('active');
+    }
   }
 
   closeTeamModal() {
     const modal = document.getElementById('teamModalBackdrop');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+      modal.classList.remove('open');
+      modal.classList.remove('active');
+    }
+  }
+
+  // ==========================================
+  // HELP & PROBLEM SEARCH CENTER
+  // ==========================================
+  setupHelpModal() {
+    this.renderHelpList();
+  }
+
+  showHelpModal() {
+    const modal = document.getElementById('helpModalBackdrop');
+    if (modal) {
+      modal.classList.add('open');
+      modal.classList.add('active');
+    }
+    const input = document.getElementById('helpProblemSearchInput');
+    if (input) {
+      setTimeout(() => input.focus(), 150);
+    }
+  }
+
+  closeHelpModal() {
+    const modal = document.getElementById('helpModalBackdrop');
+    if (modal) {
+      modal.classList.remove('open');
+      modal.classList.remove('active');
+    }
+  }
+
+  selectHelpTopic(topicKey) {
+    this.currentHelpTopic = topicKey;
+    const chipBtns = document.querySelectorAll('#helpTopicChips .help-topic-btn');
+    chipBtns.forEach(btn => {
+      if (btn.dataset.topic === topicKey) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+    this.renderHelpList();
+  }
+
+  filterHelpProblems(query) {
+    this.currentHelpQuery = (query || '').trim().toLowerCase();
+    const clearBtn = document.getElementById('helpSearchClearBtn');
+    if (clearBtn) {
+      clearBtn.style.display = this.currentHelpQuery.length > 0 ? 'flex' : 'none';
+    }
+    this.renderHelpList();
+  }
+
+  clearHelpSearch() {
+    const input = document.getElementById('helpProblemSearchInput');
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+    this.filterHelpProblems('');
+  }
+
+  toggleHelpFaq(faqId) {
+    if (this.expandedHelpIds.has(faqId)) {
+      this.expandedHelpIds.delete(faqId);
+    } else {
+      this.expandedHelpIds.add(faqId);
+    }
+    this.renderHelpList();
+  }
+
+  handleHelpAction(screenKey, subTab = null) {
+    this.closeHelpModal();
+    this.dismissHeroIntro();
+    this.switchScreen(screenKey);
+    if (screenKey === 'soil_quality' && subTab) {
+      setTimeout(() => {
+        this.switchSoilTab(subTab);
+      }, 100);
+    }
+  }
+
+  escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>"']/g, m => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    })[m]);
+  }
+
+  renderHelpList() {
+    const container = document.getElementById('helpModalBody');
+    if (!container) return;
+
+    const query = this.currentHelpQuery;
+    const topic = this.currentHelpTopic;
+
+    const filtered = helpQuestionsMasterDatabase.filter(item => {
+      const matchesTopic = (topic === 'all') || (item.category === topic);
+      if (!matchesTopic) return false;
+
+      if (!query) return true;
+      const haystack = `${item.title} ${item.keywords} ${item.summary} ${item.categoryLabel}`.toLowerCase();
+      return haystack.includes(query);
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="help-empty-state">
+          <div style="font-size:2.2rem; margin-bottom:0.6rem;">🔍</div>
+          <h4 style="margin:0 0 0.4rem; font-size:1.1rem; font-weight:800; color:#000000;">No matching problem guides found</h4>
+          <p style="margin:0; font-size:0.85rem; color:var(--ink-500);">
+            We couldn't find any questions matching "<strong>${this.escapeHtml(query)}</strong>".
+          </p>
+          <div style="margin-top:1.25rem;">
+            <button class="btn-secondary" style="font-size:0.8rem; padding:0.45rem 1rem;" onclick="window.app.clearHelpSearch()">Clear Search & View All</button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => {
+      const isExpanded = this.expandedHelpIds.has(item.id) || (query.length > 0 && filtered.length <= 3);
+      const stepsHtml = item.steps.map(step => `<li>${step}</li>`).join('');
+
+      return `
+        <div class="help-faq-item ${isExpanded ? 'expanded' : ''}" id="help_faq_${item.id}">
+          <div class="help-faq-header" onclick="window.app.toggleHelpFaq('${item.id}')">
+            <div class="help-faq-header-left">
+              <span class="help-faq-icon">${item.icon}</span>
+              <div class="help-faq-title-wrap">
+                <span class="help-faq-title">${item.title}</span>
+                <span class="help-faq-category-tag">${item.categoryLabel}</span>
+              </div>
+            </div>
+            <svg class="help-faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          <div class="help-faq-body">
+            <div class="help-faq-summary">${item.summary}</div>
+            <ol class="help-faq-steps">
+              ${stepsHtml}
+            </ol>
+            <div class="help-faq-actions">
+              <button class="btn-primary" style="padding:0.4rem 1rem; font-size:0.8rem;"
+                onclick="window.app.handleHelpAction('${item.actionScreen}', '${item.actionSubTab || ''}')">
+                <span>${item.actionText} →</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   // ==========================================
