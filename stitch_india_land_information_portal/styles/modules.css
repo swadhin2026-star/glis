@@ -847,3 +847,385 @@
   .visualizer-stage { grid-template-columns: 1fr; }
   .lulc-class-grid { grid-template-columns: 1fr; }
 }
+
+/* ==========================================================================
+   SCREEN 8: SOIL QUALITY & CROP AGRO-INTELLIGENCE
+   ========================================================================== */
+.soil-segmented-nav {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--ink-50);
+  padding: 0.35rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.soil-segment-btn {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink-600);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.soil-segment-btn:hover {
+  color: #000000;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.soil-segment-btn.active {
+  background: #000000;
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.soil-segment-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.soil-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.soil-kpi-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.soil-kpi-card h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+
+.soil-kpi-card .soil-kpi-val {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #000000;
+  margin-bottom: 0.25rem;
+}
+
+.soil-kpi-card p {
+  font-size: 0.78rem;
+  color: var(--ink-500);
+  margin: 0;
+}
+
+.soil-dist-bar-item {
+  margin-bottom: 1rem;
+}
+
+.soil-dist-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.soil-dist-progress {
+  height: 8px;
+  background: var(--ink-100);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.soil-dist-progress-fill {
+  height: 100%;
+  background: #000000;
+  border-radius: 9999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.soil-param-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.soil-param-box {
+  background: var(--ink-50);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+}
+
+.soil-param-box span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.soil-param-box strong {
+  font-size: 0.92rem;
+  color: #000000;
+  display: block;
+}
+
+.soil-crop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.soil-crop-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.15rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.soil-crop-card:hover {
+  border-color: #000000;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.soil-crop-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.soil-crop-card-top h4 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #000000;
+  margin: 0;
+}
+
+.crop-search-bar {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid var(--ink-300);
+  border-radius: var(--radius-xl);
+  padding: 0.6rem 1.25rem;
+  gap: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.25rem;
+}
+
+.crop-search-bar:focus-within {
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.crop-search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #000000;
+  outline: none;
+}
+
+.crop-filter-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.crop-filter-chip {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 9999px;
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-600);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.crop-filter-chip:hover,
+.crop-filter-chip.active {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+.crop-intel-banner {
+  background: #000000;
+  color: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: 2rem 2.25rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.crop-intel-banner h2 {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 800;
+  margin: 0.25rem 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.crop-intel-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.crop-intel-metric span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.crop-intel-metric strong {
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+.state-harvest-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.state-harvest-card:hover {
+  border-color: var(--ink-400);
+}
+
+.state-harvest-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--ink-100);
+  margin-bottom: 1rem;
+}
+
+.state-harvest-top h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #000000;
+  margin: 0;
+}
+
+.harvest-district-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.district-harvest-badge {
+  background: var(--ink-50);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #000000;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+
+.district-harvest-badge:hover {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+  cursor: pointer;
+}
+
+.soil-matrix-table-wrap {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.soil-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.soil-matrix-table th {
+  background: var(--ink-50);
+  color: #000000;
+  font-weight: 800;
+  text-align: left;
+  padding: 0.85rem 1rem;
+  border-bottom: 2px solid var(--ink-300);
+  white-space: nowrap;
+}
+
+.soil-matrix-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: top;
+}
+
+.soil-matrix-table tr:hover td {
+  background: var(--ink-50);
+}
+
+@media (max-width: 992px) {
+  .soil-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .crop-intel-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .soil-kpi-grid { grid-template-columns: 1fr; }
+  .soil-param-grid { grid-template-columns: 1fr; }
+  .crop-intel-metrics-grid { grid-template-columns: 1fr; }
+  .soil-segment-btn { min-width: 100%; }
+}

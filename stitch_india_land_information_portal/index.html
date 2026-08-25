@@ -137,12 +137,12 @@
           </svg>
           Land Records
         </button>
-        <button class="nav-tab-btn" data-screen="environmental_monitoring">
+        <button class="nav-tab-btn" data-screen="soil_quality">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
           </svg>
-          Environment
+          Soil Quality
         </button>
         <button class="nav-tab-btn" data-screen="ai_satellite_ml">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1036,60 +1036,243 @@
       </section>
 
       <!-- ==========================================================================
-           SCREEN 7: ENVIRONMENTAL MONITORING MODULE
+           SCREEN 7: SOIL QUALITY & CROP AGRO-INTELLIGENCE MODULE
            ========================================================================== -->
-      <section id="screen_environmental_monitoring" class="screen-view">
+      <section id="screen_soil_quality" class="screen-view">
         <div class="module-page-container">
+          
+          <!-- Header Banner -->
           <div class="module-header-banner">
             <div class="module-header-left">
-              <span>REMOTE SENSING ECOLOGICAL INTELLIGENCE</span>
-              <h2>Environmental & Wetland Monitoring</h2>
-              <p>Track Sentinel-2 multi-year NDVI vegetation canopy index, surface water body surface recession rates,
-                thermal forest fire hotspots, and soil degradation risks.</p>
+              <span>NATIONAL AGRO-PEDOLOGY & CROP HARVEST INTELLIGENCE</span>
+              <h2>Soil Quality, Suitability & Crop Harvest Discovery</h2>
+              <p>Explore state-wise soil classification (pH, NPK, organic carbon), soil-to-crop suitability matrices, and reverse crop search showing producing states and specific harvesting districts across India.</p>
             </div>
             <div style="display:flex; gap:1rem; align-items:center;">
-              <select class="state-selector-dropdown"></select>
+              <select class="state-selector-dropdown" id="soilStateSelect" onchange="window.app.selectSoilState(this.value)"></select>
             </div>
           </div>
 
-          <div class="module-grid-2col">
-            <!-- NDVI Multi-Year Trend -->
-            <div class="module-card">
-              <div class="card-title-row">
-                <h3>Sentinel-2 Mean NDVI Canopy Index (2020-2026)</h3>
-                <span class="badge-black">NDVI Analytics</span>
-              </div>
+          <!-- Segmented Navigation Mode Tabs -->
+          <div class="soil-segmented-nav">
+            <button id="btnSoilTabState" class="soil-segment-btn active" onclick="window.app.switchSoilTab('state')">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+              </svg>
+              <span>1. State Soil & Crop Suitability</span>
+            </button>
+            <button id="btnSoilTabCrop" class="soil-segment-btn" onclick="window.app.switchSoilTab('crop')">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span>2. Crop Reverse Search & Harvest Districts</span>
+            </button>
+            <button id="btnSoilTabMatrix" class="soil-segment-btn" onclick="window.app.switchSoilTab('matrix')">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              <span>3. National 8-Order Soil Catalog</span>
+            </button>
+          </div>
 
-              <table class="suitability-ranked-table">
-                <thead>
-                  <tr>
-                    <th>Year Cycle</th>
-                    <th>Mean NDVI</th>
-                    <th>Canopy Density</th>
-                    <th>Health Status</th>
-                  </tr>
-                </thead>
-                <tbody id="ndviTrendTableBody"></tbody>
-              </table>
+          <!-- Top National Soil & Agronomy KPI Strip -->
+          <div class="soil-kpi-grid">
+            <div class="soil-kpi-card">
+              <h4>Major Soil Orders</h4>
+              <div class="soil-kpi-val">8 Orders</div>
+              <p>Alluvial 43.4% • Red 18.6% • Black 15.2%</p>
             </div>
-
-            <!-- Surface Water Body & Fire Hotspot Alerts -->
-            <div class="module-card">
-              <div class="card-title-row">
-                <h3>Surface Water Bodies (NDWI Index)</h3>
-                <span class="badge-white">Wetland Inventory</span>
-              </div>
-              <div id="waterMetricsContainer"></div>
-
-              <div class="card-title-row" style="margin-top:2rem;">
-                <h3>Active Thermal Hotspots (VIIRS / MODIS)</h3>
-                <span class="badge-black">Live Fire Radar</span>
-              </div>
-              <div id="fireAlertsContainer"></div>
+            <div class="soil-kpi-card">
+              <h4>Soil Health Cards</h4>
+              <div class="soil-kpi-val">23.58+ Cr</div>
+              <p>National Soil Health Card Portal (DAC&FW)</p>
+            </div>
+            <div class="soil-kpi-card">
+              <h4>Cropping Cycles</h4>
+              <div class="soil-kpi-val">4 Seasons</div>
+              <p>Kharif (Monsoon) • Rabi (Winter) • Zaid • Perennial</p>
+            </div>
+            <div class="soil-kpi-card">
+              <h4>Total Arable Acreage</h4>
+              <div class="soil-kpi-val">159.7M Ha</div>
+              <p>Ranked #2 Globally in Arable Land</p>
             </div>
           </div>
+
+          <!-- ===================================================================
+               VIEW 1: STATE SOIL & CROP SUITABILITY EXPLORER
+               =================================================================== -->
+          <div id="soilViewStateContainer">
+            <div class="module-grid-2col">
+              
+              <!-- Left Column: State Soil Profile & Parameters -->
+              <div>
+                <div class="module-card">
+                  <div class="card-title-row">
+                    <div>
+                      <h3 id="soilStateProfileTitle">Gujarat Soil Profile & Health Index</h3>
+                      <span style="font-size:0.75rem; color:var(--ink-500);">ICAR-NBSS&LUP State Soil Inventory</span>
+                    </div>
+                    <span id="soilStateHealthBadge" class="badge-black">Health: 81 / 100</span>
+                  </div>
+
+                  <!-- Distribution Progress Bars -->
+                  <div style="margin: 1.25rem 0 1.75rem;">
+                    <h5 style="font-size:0.82rem; font-weight:800; text-transform:uppercase; color:var(--ink-600); margin-bottom:0.75rem;">Soil Distribution in State</h5>
+                    <div id="soilStateDistBars"></div>
+                  </div>
+
+                  <!-- Physical & Chemical Parameters Grid -->
+                  <div class="soil-param-grid" id="soilStateParamsGrid"></div>
+
+                  <!-- Advisory Box -->
+                  <div style="background:var(--ink-50); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:1rem 1.25rem; margin-top:1.25rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem;">
+                      <span style="font-size:0.95rem;">🌱</span>
+                      <strong style="font-size:0.85rem; color:#000000;">State Soil Health & Nutrient Advisory:</strong>
+                    </div>
+                    <p id="soilStateAdvisoryText" style="font-size:0.8rem; color:var(--ink-600); margin:0; line-height:1.5;"></p>
+                  </div>
+                </div>
+
+                <!-- District Agro-Climatic Clusters Card -->
+                <div class="module-card" style="margin-top:1.5rem;">
+                  <div class="card-title-row">
+                    <h3>District Soil & Agronomic Clusters</h3>
+                    <span class="badge-white">Agro-Climatic Zones</span>
+                  </div>
+                  <div id="soilDistrictClustersContainer" style="display:flex; flex-direction:column; gap:1rem;"></div>
+                </div>
+              </div>
+
+              <!-- Right Column: Crop Suitability for State's Soils -->
+              <div class="module-card">
+                <div class="card-title-row">
+                  <div>
+                    <h3>Crop Suitability for Available Soils</h3>
+                    <p style="font-size:0.78rem; color:var(--ink-500); margin:0.2rem 0 0;">Matches crops with the state's specific soil types. Click any crop to reverse-search harvesting districts.</p>
+                  </div>
+                  <span class="badge-black">High Yield Potential</span>
+                </div>
+
+                <div id="soilStateCropsContainer" class="soil-crop-grid" style="margin-top:1.25rem;"></div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ===================================================================
+               VIEW 2: CROP REVERSE SEARCH & HARVESTING DISTRICTS FINDER
+               =================================================================== -->
+          <div id="soilViewCropContainer" style="display:none;">
+            
+            <!-- Crop Search & Filter Header -->
+            <div class="module-card" style="margin-bottom:1.5rem;">
+              <div class="crop-search-bar">
+                <svg style="width:20px; height:20px; color:var(--ink-500);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input type="text" id="soilCropSearchInput" placeholder="Type crop name (e.g. Rice, Wheat, Cotton, Sugarcane, Tea, Coffee, Soybean, Mustard, Groundnut, Gram, Tur, Apple)..." oninput="window.app.searchSoilCrops(this.value)">
+                <span class="badge-white" style="font-size:0.75rem;">Instant Filter</span>
+              </div>
+
+              <!-- Category Pills -->
+              <div class="crop-filter-chips">
+                <button class="crop-filter-chip active" onclick="window.app.filterCropCategory('ALL', this)">All Crops</button>
+                <button class="crop-filter-chip" onclick="window.app.filterCropCategory('Cereals', this)">Cereals & Millets</button>
+                <button class="crop-filter-chip" onclick="window.app.filterCropCategory('Cash', this)">Cash & Fiber</button>
+                <button class="crop-filter-chip" onclick="window.app.filterCropCategory('Oilseeds', this)">Oilseeds</button>
+                <button class="crop-filter-chip" onclick="window.app.filterCropCategory('Pulses', this)">Pulses (Dal)</button>
+                <button class="crop-filter-chip" onclick="window.app.filterCropCategory('Plantation', this)">Plantation & Spices</button>
+                <button class="crop-filter-chip" onclick="window.app.filterCropCategory('Fruits', this)">Fruits & Vegetables</button>
+              </div>
+
+              <!-- Quick Selection Chips -->
+              <div style="display:flex; flex-wrap:wrap; gap:0.45rem; align-items:center;" id="cropQuickPillsContainer">
+                <span style="font-size:0.75rem; font-weight:700; color:var(--ink-500); margin-right:0.35rem;">Popular:</span>
+              </div>
+            </div>
+
+            <!-- Selected Crop Intelligence Hero Card -->
+            <div class="crop-intel-banner" id="cropIntelHeroBanner">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+                <div>
+                  <span id="cropIntelCategoryBadge" class="badge-white" style="background:#ffffff; color:#000000; font-size:0.75rem;">Cash & Fiber Crops</span>
+                  <h2 id="cropIntelTitle">🌱 Cotton (White Gold) <span style="font-size:1.1rem; opacity:0.8; font-weight:600;">(कपास / रुई)</span></h2>
+                  <p id="cropIntelNationalShare" style="font-size:0.88rem; color:rgba(255,255,255,0.8); margin:0; max-width:850px;"></p>
+                </div>
+              </div>
+
+              <div class="crop-intel-metrics-grid">
+                <div class="crop-intel-metric">
+                  <span>Ideal Soil Type(s)</span>
+                  <strong id="cropIntelSoil">Deep Black Cotton Soil (Regur / Vertisols)</strong>
+                </div>
+                <div class="crop-intel-metric">
+                  <span>Soil pH & Tolerance</span>
+                  <strong id="cropIntelPh">7.0 – 8.5 (Alkaline)</strong>
+                </div>
+                <div class="crop-intel-metric">
+                  <span>Climate & Rainfall</span>
+                  <strong id="cropIntelClimate">21°C – 32°C | 500 – 1000 mm</strong>
+                </div>
+                <div class="crop-intel-metric">
+                  <span>Cropping & Harvest Season</span>
+                  <strong id="cropIntelSeason">Kharif • Oct – Feb</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- State-wise & District-by-District Harvest Breakdown -->
+            <div class="module-card">
+              <div class="card-title-row">
+                <div>
+                  <h3 id="cropHarvestHeading">Harvesting States & Major Producing Districts</h3>
+                  <p style="font-size:0.78rem; color:var(--ink-500); margin:0.2rem 0 0;">Identifies exact districts in each Indian state where this crop is majorly grown and harvested.</p>
+                </div>
+                <span id="cropProducingStatesCountBadge" class="badge-black">7 States Active</span>
+              </div>
+
+              <div id="cropHarvestStatesContainer"></div>
+            </div>
+
+          </div>
+
+          <!-- ===================================================================
+               VIEW 3: NATIONAL 8-ORDER SOIL CATALOG & MASTER MATRIX
+               =================================================================== -->
+          <div id="soilViewMatrixContainer" style="display:none;">
+            <div class="module-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>National Soil Classification Master Matrix (ICAR Orders)</h3>
+                  <p style="font-size:0.78rem; color:var(--ink-500); margin:0.2rem 0 0;">Comprehensive pedological and agronomic database for all 8 major soil orders across India.</p>
+                </div>
+                <span class="badge-black">8 Soil Orders</span>
+              </div>
+
+              <div class="soil-matrix-table-wrap">
+                <table class="soil-matrix-table">
+                  <thead>
+                    <tr>
+                      <th>Soil Type & ICAR Order</th>
+                      <th>Coverage & %</th>
+                      <th>pH & Organic Carbon</th>
+                      <th>NPK & Micronutrients</th>
+                      <th>Best Suited Crops</th>
+                      <th>Major Indian Belts</th>
+                      <th>Management Advisory</th>
+                    </tr>
+                  </thead>
+                  <tbody id="nationalSoilMatrixTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
+
 
       <!-- ==========================================================================
            SCREEN: AI SATELLITE ML & U-NET SEGMENTATION
@@ -1633,8 +1816,7 @@
           <div class="footer-col">
             <h5>Data Governance</h5>
             <a href="javascript:void(0)" onclick="window.app.switchScreen('land_governance')">Cadastral RoR (7/12)</a>
-            <a href="javascript:void(0)" onclick="window.app.switchScreen('environmental_monitoring')">Environmental
-              NDVI</a>
+            <a href="javascript:void(0)" onclick="window.app.switchScreen('soil_quality')">Soil & Crop Quality</a>
             <a href="javascript:void(0)" onclick="window.app.switchScreen('socio_economic')">Socio-Economic Radar</a>
             <a href="javascript:void(0)" onclick="window.app.switchScreen('glis_platform')">32 GIS Resources</a>
           </div>
@@ -1667,6 +1849,8 @@
   <script src="js/urbanEngine.js"></script>
   <script src="js/qrCodeGenerator.js"></script>
   <script src="js/governanceEngine.js"></script>
+  <script src="js/soilData.js"></script>
+  <script src="js/soilEngine.js"></script>
   <script src="js/environmentalEngine.js"></script>
   <script src="js/aiEngine.js"></script>
   <script src="js/socioEconomicEngine.js"></script>

@@ -14,6 +14,7 @@ class IndiaLandApp {
     this.suitabilityEngine = new SuitabilityEngine();
     this.urbanEngine = new UrbanPlanningEngine();
     this.governanceEngine = new LandGovernanceEngine();
+    this.soilEngine = new SoilQualityEngine();
     this.environmentalEngine = new EnvironmentalEngine();
     this.aiEngine = new AIEngine();
     this.socioEconomicEngine = new SocioEconomicEngine();
@@ -215,7 +216,9 @@ class IndiaLandApp {
       site_suitability: "Infrastructure Site Suitability",
       urban_planning: "Urban Planning Module",
       land_governance: "Land Governance Records",
+      soil_quality: "Soil Quality & Crop Discovery",
       environmental_monitoring: "Environmental Monitoring Module",
+      ai_satellite_ml: "AI Satellite ML Lab",
       socio_economic: "Socio-Economic Analysis",
       report_builder: "Report Builder & Insights",
       admin_management: "Admin Data Management"
@@ -485,7 +488,7 @@ class IndiaLandApp {
     this.renderSuitabilityScreen(stateKey);
     this.renderUrbanPlanningScreen(stateKey);
     this.renderGovernanceScreen(stateKey);
-    this.renderEnvironmentalScreen(stateKey);
+    this.renderSoilQualityScreen(stateKey);
     this.renderAiSatelliteScreen(stateKey);
     this.renderSocioEconomicScreen(stateKey);
     this.renderReportBuilderScreen(stateKey);
@@ -741,63 +744,372 @@ class IndiaLandApp {
   }
 
   // ==========================================
-  // SCREEN 7: ENVIRONMENTAL MONITORING
+  // SCREEN 7: SOIL QUALITY & CROP AGRO-INTELLIGENCE
   // ==========================================
-  async renderEnvironmentalScreen(stateKey) {
-    await this.environmentalEngine.refreshLiveFireHotspots();
-    const ndviTrend = this.environmentalEngine.getNDVITrend(stateKey);
-    const waterMetrics = this.environmentalEngine.getWaterBodyMetrics(stateKey);
+  renderSoilQualityScreen(stateKey) {
+    const state = stateKey || this.currentStateKey || 'gujarat';
+    this.renderSoilStateView(state);
+    this.renderSoilCropView(this.soilEngine.currentSelectedCrop || 'cotton');
+    this.renderSoilNationalMatrix();
+    this.renderQuickCropPills(this.soilEngine.currentCategoryFilter || 'ALL');
 
-    const ndviTable = document.getElementById('ndviTrendTableBody');
-    if (ndviTable) {
-      ndviTable.innerHTML = '';
-      ndviTrend.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${row.year}</strong></td>
-          <td><span class="badge-black" style="font-family:var(--font-mono);">${row.meanNDVI}</span></td>
-          <td>${row.canopyDensity}</td>
-          <td><span class="badge-white">${row.health}</span></td>
+    // Sync Soil State selector dropdown
+    const sel = document.getElementById('soilStateSelect');
+    if (sel && sel.value !== state) {
+      sel.value = state;
+    }
+  }
+
+  switchSoilTab(tabName) {
+    this.soilEngine.currentSoilTab = tabName;
+
+    // Toggle button active classes
+    const btnState = document.getElementById('btnSoilTabState');
+    const btnCrop = document.getElementById('btnSoilTabCrop');
+    const btnMatrix = document.getElementById('btnSoilTabMatrix');
+
+    if (btnState) btnState.classList.toggle('active', tabName === 'state');
+    if (btnCrop) btnCrop.classList.toggle('active', tabName === 'crop');
+    if (btnMatrix) btnMatrix.classList.toggle('active', tabName === 'matrix');
+
+    // Toggle container views
+    const viewState = document.getElementById('soilViewStateContainer');
+    const viewCrop = document.getElementById('soilViewCropContainer');
+    const viewMatrix = document.getElementById('soilViewMatrixContainer');
+
+    if (viewState) viewState.style.display = tabName === 'state' ? 'block' : 'none';
+    if (viewCrop) viewCrop.style.display = tabName === 'crop' ? 'block' : 'none';
+    if (viewMatrix) viewMatrix.style.display = tabName === 'matrix' ? 'block' : 'none';
+  }
+
+  selectSoilState(stateKey) {
+    if (!stateKey) return;
+    this.currentStateKey = stateKey;
+    this.soilEngine.currentSelectedState = stateKey;
+
+    // Sync all global state selectors
+    document.querySelectorAll('.state-selector-dropdown').forEach(s => s.value = stateKey);
+
+    this.renderSoilStateView(stateKey);
+    this.showToast(`Inspecting Soil Profile for ${stateDatabase[stateKey]?.name || stateKey}`);
+  }
+
+  renderSoilStateView(stateKey) {
+    const key = stateKey || this.currentStateKey || 'gujarat';
+    const profile = this.soilEngine.getStateSoilProfile(key);
+    const kpis = this.soilEngine.calculateStateSoilKPIs(key);
+    const state = stateDatabase[key] || { name: profile.stateName || 'State' };
+
+    // Title & Health Score Badge
+    const titleEl = document.getElementById('soilStateProfileTitle');
+    const badgeEl = document.getElementById('soilStateHealthBadge');
+    if (titleEl) titleEl.textContent = `${state.name} Soil Profile & Health Rating`;
+    if (badgeEl) {
+      badgeEl.textContent = `Soil Health Index: ${kpis.healthIndex} / 100 • ${kpis.rating}`;
+      badgeEl.className = kpis.badgeClass;
+    }
+
+    // Distribution Bars
+    const barsContainer = document.getElementById('soilStateDistBars');
+    if (barsContainer) {
+      barsContainer.innerHTML = '';
+      profile.soilDistribution.forEach(soil => {
+        const item = document.createElement('div');
+        item.className = 'soil-dist-bar-item';
+        item.innerHTML = `
+          <div class="soil-dist-bar-header">
+            <span>${soil.name} (${soil.areaKm2 ? soil.areaKm2.toLocaleString() + ' km²' : ''})</span>
+            <span style="font-family:var(--font-mono);">${soil.percent}%</span>
+          </div>
+          <div class="soil-dist-progress">
+            <div class="soil-dist-progress-fill" style="width: ${soil.percent}%;"></div>
+          </div>
         `;
-        ndviTable.appendChild(tr);
+        barsContainer.appendChild(item);
       });
     }
 
-    const waterContainer = document.getElementById('waterMetricsContainer');
-    if (waterContainer) {
-      waterContainer.innerHTML = `
-        <div class="water-index-card">
-          <div><strong>Total Water Bodies Inventoried</strong><p style="font-size:0.78rem; color:#71717a;">ISRO Bhuvan Wetland & Lake Atlas</p></div>
-          <h3 style="color:#000000; font-family:var(--font-display); font-size:1.35rem;">${waterMetrics.totalWaterBodiesInventoried.toLocaleString()} Bodies</h3>
+    // Physical & Chemical Parameters Grid
+    const paramsContainer = document.getElementById('soilStateParamsGrid');
+    if (paramsContainer) {
+      const primarySoilId = profile.soilDistribution[0]?.type || 'alluvial';
+      const masterSoil = this.soilEngine.getSoilType(primarySoilId);
+
+      paramsContainer.innerHTML = `
+        <div class="soil-param-box">
+          <span>Primary Soil Order</span>
+          <strong>${masterSoil.name}</strong>
         </div>
-        <div class="water-index-card">
-          <div><strong>Perennial Water Surface Area</strong><p style="font-size:0.78rem; color:#71717a;">Estimated surface coverage</p></div>
-          <h3 style="color:#000000; font-family:var(--font-display); font-size:1.35rem;">${waterMetrics.perennialSurfaceAreaHectares.toLocaleString()} Ha</h3>
+        <div class="soil-param-box">
+          <span>Soil pH Range</span>
+          <strong>${masterSoil.phRange} (Median: ${masterSoil.phMedian})</strong>
         </div>
-        <div class="water-index-card">
-          <div><strong>Groundwater Basin Category</strong><p style="font-size:0.78rem; color:#71717a;">Central Ground Water Board (CGWB)</p></div>
-          <span class="badge-white" style="font-size:0.75rem;">${waterMetrics.groundwaterStatus}</span>
+        <div class="soil-param-box">
+          <span>Organic Carbon</span>
+          <strong>${masterSoil.organicCarbon}</strong>
+        </div>
+        <div class="soil-param-box">
+          <span>Moisture Capacity</span>
+          <strong>${masterSoil.moistureRetention}</strong>
+        </div>
+        <div class="soil-param-box">
+          <span>NPK Status</span>
+          <strong>N: ${masterSoil.npkProfile.nitrogen.split(' ')[0]} | P: ${masterSoil.npkProfile.phosphorus.split(' ')[0]} | K: High</strong>
+        </div>
+        <div class="soil-param-box">
+          <span>Soil Drainage</span>
+          <strong>${masterSoil.drainage}</strong>
         </div>
       `;
     }
 
-    const fireContainer = document.getElementById('fireAlertsContainer');
-    if (fireContainer) {
-      fireContainer.innerHTML = '';
-      this.environmentalEngine.fireHotspots.forEach(fire => {
-        const div = document.createElement('div');
-        div.className = 'fire-alert-strip';
-        div.innerHTML = `
-          <div>
-            <strong>${fire.district}, ${fire.state}</strong>
-            <span style="font-size:0.75rem; color:#71717a; margin-left:0.5rem;">(${fire.detectedTime})</span>
-            <p style="font-size:0.75rem; color:#52525b;">Coords: ${fire.lat}°N, ${fire.lng}°E | Thermal Brightness: ${fire.brightness}</p>
-          </div>
-          <span class="badge-black" style="font-size:0.7rem;">Confidence: ${fire.confidence}</span>
-        `;
-        fireContainer.appendChild(div);
+    // Advisory
+    const advisoryEl = document.getElementById('soilStateAdvisoryText');
+    if (advisoryEl) {
+      advisoryEl.textContent = profile.soilAdvisories || kpis.advisory;
+    }
+
+    // District Clusters
+    const clusterContainer = document.getElementById('soilDistrictClustersContainer');
+    if (clusterContainer) {
+      clusterContainer.innerHTML = '';
+      if (profile.districtClusters && Object.keys(profile.districtClusters).length > 0) {
+        Object.keys(profile.districtClusters).forEach(clusterName => {
+          const dists = profile.districtClusters[clusterName];
+          const div = document.createElement('div');
+          div.style.cssText = 'background:var(--ink-50); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.85rem 1rem;';
+          div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+              <strong style="font-size:0.88rem; color:#000000;">${clusterName}</strong>
+              <span class="badge-white" style="font-size:0.7rem;">${dists.length} Districts</span>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.35rem;">
+              ${dists.map(d => `<span class="district-harvest-badge" onclick="window.app.selectDistrict('${d}', stateDatabase['${key}'])">${d}</span>`).join('')}
+            </div>
+          `;
+          clusterContainer.appendChild(div);
+        });
+      } else {
+        clusterContainer.innerHTML = `<p style="font-size:0.8rem; color:var(--ink-500); margin:0;">All districts in this state feature homogenous agro-climatic conditions.</p>`;
+      }
+    }
+
+    // Crop Suitability for State's Soils
+    const cropsContainer = document.getElementById('soilStateCropsContainer');
+    if (cropsContainer) {
+      cropsContainer.innerHTML = '';
+      const renderedCrops = new Set();
+
+      profile.soilDistribution.forEach(soilItem => {
+        const masterSoil = this.soilEngine.getSoilType(soilItem.type);
+        if (masterSoil && masterSoil.suitableCrops) {
+          masterSoil.suitableCrops.forEach(crop => {
+            if (!renderedCrops.has(crop.name)) {
+              renderedCrops.add(crop.name);
+              const card = document.createElement('div');
+              card.className = 'soil-crop-card';
+              card.onclick = () => {
+                // Reverse search this crop in Crop view
+                this.selectSoilCrop(crop.name);
+              };
+
+              card.innerHTML = `
+                <div>
+                  <div class="soil-crop-card-top">
+                    <h4>${crop.name}</h4>
+                    <span class="badge-black" style="font-size:0.7rem;">${crop.suitability}</span>
+                  </div>
+                  <p style="font-size:0.78rem; color:var(--ink-500); margin:0 0 0.5rem;">Soil: <strong>${masterSoil.name.split('(')[0]}</strong></p>
+                  <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--ink-600); margin-bottom:0.75rem; background:var(--ink-50); padding:0.4rem 0.6rem; border-radius:var(--radius-sm);">
+                    <span>Season: <strong>${crop.season}</strong></span>
+                    <span>Yield: <strong>${crop.yieldPotential}</strong></span>
+                  </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end;">
+                  <span style="font-size:0.75rem; font-weight:700; color:#000000; display:inline-flex; align-items:center; gap:0.25rem;">
+                    Find Harvest Districts →
+                  </span>
+                </div>
+              `;
+              cropsContainer.appendChild(card);
+            }
+          });
+        }
       });
     }
+  }
+
+  renderSoilCropView(cropKeyOrQuery) {
+    const crop = this.soilEngine.getCropProfile(cropKeyOrQuery);
+    if (!crop) return;
+
+    this.soilEngine.currentSelectedCrop = crop.id;
+
+    // Crop Intel Hero Card
+    const catBadge = document.getElementById('cropIntelCategoryBadge');
+    const titleEl = document.getElementById('cropIntelTitle');
+    const shareEl = document.getElementById('cropIntelNationalShare');
+    const soilEl = document.getElementById('cropIntelSoil');
+    const phEl = document.getElementById('cropIntelPh');
+    const climateEl = document.getElementById('cropIntelClimate');
+    const seasonEl = document.getElementById('cropIntelSeason');
+
+    if (catBadge) catBadge.textContent = crop.category;
+    if (titleEl) titleEl.innerHTML = `${crop.icon || '🌱'} ${crop.name} <span style="font-size:1.1rem; opacity:0.8; font-weight:600;">(${crop.hindiName || ''})</span>`;
+    if (shareEl) shareEl.textContent = `${crop.nationalShare} • Harvest Months: ${crop.harvestMonths}`;
+    if (soilEl) soilEl.textContent = crop.idealSoil;
+    if (phEl) phEl.textContent = `${crop.soilPh} (Optimal Range)`;
+    if (climateEl) climateEl.textContent = `${crop.temperature} • Rain: ${crop.rainfall}`;
+    if (seasonEl) seasonEl.textContent = `${crop.season} (${crop.harvestMonths})`;
+
+    // Producing States & Districts Count Badge
+    const countBadge = document.getElementById('cropProducingStatesCountBadge');
+    const headingEl = document.getElementById('cropHarvestHeading');
+    if (countBadge) countBadge.textContent = `${crop.producingStates.length} Major Producing States`;
+    if (headingEl) headingEl.textContent = `Harvesting States & Major Producing Districts for ${crop.name}`;
+
+    // Producing States & Districts List
+    const statesContainer = document.getElementById('cropHarvestStatesContainer');
+    if (statesContainer) {
+      statesContainer.innerHTML = '';
+      crop.producingStates.forEach(st => {
+        const card = document.createElement('div');
+        card.className = 'state-harvest-card';
+        card.innerHTML = `
+          <div class="state-harvest-top">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <h3>${st.state}</h3>
+              <span class="badge-black" style="font-family:var(--font-mono); font-size:0.78rem;">${st.sharePercent}% National Output</span>
+            </div>
+            <span class="badge-white" style="font-size:0.78rem;">Harvest Window: <strong>${st.harvestSeason}</strong></span>
+          </div>
+          <div>
+            <span style="font-size:0.75rem; font-weight:700; color:var(--ink-500); text-transform:uppercase; letter-spacing:0.04em;">Major Harvesting Districts (${st.majorDistricts.length} Identified):</span>
+            <div class="harvest-district-chips">
+              ${st.majorDistricts.map(d => `<span class="district-harvest-badge" onclick="window.app.focusDistrictHarvest('${d}', '${st.state}')">📍 ${d}</span>`).join('')}
+            </div>
+          </div>
+        `;
+        statesContainer.appendChild(card);
+      });
+    }
+  }
+
+  focusDistrictHarvest(distName, stateName) {
+    this.showToast(`Selected ${distName} District, ${stateName}`);
+    // If state exists, switch state
+    const stateKey = Object.keys(stateDatabase).find(k => stateDatabase[k].name.toLowerCase() === stateName.toLowerCase());
+    if (stateKey) {
+      this.currentStateKey = stateKey;
+      const districtInput = document.getElementById('inputCadastralDistrict');
+      if (districtInput) districtInput.value = distName;
+    }
+  }
+
+  selectSoilCrop(cropKey) {
+    this.switchSoilTab('crop');
+    this.renderSoilCropView(cropKey);
+    const searchInput = document.getElementById('soilCropSearchInput');
+    if (searchInput) searchInput.value = '';
+
+    const heroBanner = document.getElementById('cropIntelHeroBanner');
+    if (heroBanner) {
+      heroBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    const crop = this.soilEngine.getCropProfile(cropKey);
+    this.showToast(`Inspecting Harvest Districts for ${crop.name}`);
+  }
+
+  filterCropCategory(category, btnElement) {
+    this.soilEngine.currentCategoryFilter = category;
+
+    // Update active filter chip button
+    document.querySelectorAll('.crop-filter-chip').forEach(b => b.classList.remove('active'));
+    if (btnElement) btnElement.classList.add('active');
+
+    this.renderQuickCropPills(category);
+
+    // Auto-select first crop in category
+    const crops = this.soilEngine.filterCropsByCategory(category);
+    if (crops.length > 0) {
+      this.renderSoilCropView(crops[0].id);
+    }
+  }
+
+  searchSoilCrops(query) {
+    if (!query || query.trim() === '') {
+      this.renderSoilCropView(this.soilEngine.currentSelectedCrop || 'cotton');
+      return;
+    }
+
+    const results = this.soilEngine.searchCrops(query);
+    if (results.length > 0) {
+      this.renderSoilCropView(results[0].id);
+    } else {
+      const statesContainer = document.getElementById('cropHarvestStatesContainer');
+      if (statesContainer) {
+        statesContainer.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--ink-500); font-weight:600;">No matching crops found for "${query}". Try searching Rice, Wheat, Cotton, Tea, Coffee, etc.</div>`;
+      }
+    }
+  }
+
+  renderQuickCropPills(category = 'ALL') {
+    const container = document.getElementById('cropQuickPillsContainer');
+    if (!container) return;
+
+    container.innerHTML = '<span style="font-size:0.75rem; font-weight:700; color:var(--ink-500); margin-right:0.35rem;">Quick Select:</span>';
+    const crops = this.soilEngine.filterCropsByCategory(category);
+
+    crops.slice(0, 14).forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'crop-filter-chip';
+      btn.style.cssText = 'padding:0.3rem 0.75rem; font-size:0.75rem;';
+      btn.innerHTML = `${c.icon || '🌱'} ${c.name}`;
+      btn.onclick = () => this.selectSoilCrop(c.id);
+      container.appendChild(btn);
+    });
+  }
+
+  renderSoilNationalMatrix() {
+    const tableBody = document.getElementById('nationalSoilMatrixTableBody');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '';
+    const soils = this.soilEngine.getAllSoilTypes();
+
+    soils.forEach(s => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <strong style="font-size:0.95rem; color:#000000;">${s.name}</strong><br>
+          <span style="font-size:0.78rem; color:var(--ink-500);">${s.hindiName} • Order: ${s.order}</span>
+        </td>
+        <td>
+          <strong>${s.coveragePercent}%</strong><br>
+          <span style="font-size:0.75rem; color:var(--ink-500);">${(s.coverageAreaKm2 / 1000).toFixed(0)}k km²</span>
+        </td>
+        <td>
+          <span class="badge-black" style="font-family:var(--font-mono); font-size:0.75rem;">pH ${s.phRange}</span><br>
+          <span style="font-size:0.75rem; color:var(--ink-600); margin-top:3px; display:inline-block;">OC: ${s.organicCarbon.split(' ')[0]}</span>
+        </td>
+        <td>
+          <span style="font-size:0.75rem; color:var(--ink-600); line-height:1.4; display:block;">
+            <strong>N:</strong> ${s.npkProfile.nitrogen.split(' ')[0]}<br>
+            <strong>P:</strong> ${s.npkProfile.phosphorus.split(' ')[0]}<br>
+            <strong>K:</strong> ${s.npkProfile.potassium.split(' ')[0]}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex; flex-wrap:wrap; gap:0.25rem;">
+            ${s.suitableCrops.slice(0, 4).map(c => `<span class="badge-white" style="font-size:0.7rem; cursor:pointer;" onclick="window.app.selectSoilCrop('${c.name}')">${c.name}</span>`).join('')}
+          </div>
+        </td>
+        <td style="max-width:240px; font-size:0.78rem; color:var(--ink-600);">${s.majorBelts}</td>
+        <td style="max-width:240px; font-size:0.78rem; color:var(--ink-600);">${s.managementAdvisory}</td>
+      `;
+      tableBody.appendChild(tr);
+    });
   }
 
   // ==========================================
