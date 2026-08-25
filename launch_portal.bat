@@ -37,6 +37,11 @@ if exist "C:\ProgramData\anaconda3\python.exe" (
     goto :found_python
 )
 
+if exist "%~dp0portable_python\python.exe" (
+    set "PY_CMD=%~dp0portable_python\python.exe"
+    goto :found_python
+)
+
 if exist "%LOCALAPPDATA%\Programs\Python\Python311\python.exe" (
     set "PY_CMD=%LOCALAPPDATA%\Programs\Python\Python311\python.exe"
     goto :found_python

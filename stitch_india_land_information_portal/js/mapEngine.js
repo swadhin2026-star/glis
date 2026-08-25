@@ -630,10 +630,169 @@ class GISMapEngine {
 
     this.currentStateMarker.bindPopup(popupHtml, { className: 'custom-gis-popup' }).openPopup();
 
+    // Render Agricultural Table and Map Dots
+    this.renderAgriData(stateKey, state);
+
     // Trigger map invalidation after flying
     setTimeout(() => {
       if (this.map) this.map.invalidateSize();
     }, 300);
+  }
+
+  renderAgriData(stateKey, state) {
+    const tableBody = document.getElementById('mapAgriTableBody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+
+    // Clear previous agri dots
+    if (this.agriDotsLayer) {
+      this.agriDotsLayer.clearLayers();
+    } else {
+      this.agriDotsLayer = L.layerGroup().addTo(this.map);
+    }
+
+    if (!state.districtList || state.districtList.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 0.5rem;">No district data available</td></tr>';
+      return;
+    }
+
+    const crops = ["Wheat", "Rice", "Sugarcane", "Cotton", "Maize", "Millets", "Pulses", "Groundnut"];
+
+    // Fill the table first
+    state.districtList.forEach((dist) => {
+      let hash = 0;
+      for (let i = 0; i < dist.length; i++) hash = (hash * 31 + dist.charCodeAt(i)) & 0xffffffff;
+      const variance = (Math.abs(hash % 40) - 20) / 100;
+      const baseAgri = state.land && state.land.agriculture ? state.land.agriculture : 40;
+      const distAgri = Math.min(85, Math.max(10, Math.round(baseAgri * (1 + variance * 0.5))));
+      const crop = crops[Math.abs(hash) % crops.length];
+      
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = "1px solid var(--border-subtle)";
+      tr.innerHTML = `
+        <td style="padding: 0.25rem;"><strong>${dist}</strong></td>
+        <td style="padding: 0.25rem;">${distAgri}%</td>
+        <td style="padding: 0.25rem;">${crop}</td>
+      `;
+      tableBody.appendChild(tr);
+    });
+
+    // Handle GeoJSON District Polygons
+    if (!this.cachedDistrictGeoJSON) {
+      this.cachedDistrictGeoJSON = {};
+    }
+
+    const drawAgriDistricts = (geojsonData) => {
+      if (!geojsonData || this.activeStateKey !== stateKey) return;
+
+      // Use Turf.js to approximate agricultural land inside districts
+      let approximatedFeatures = [];
+      if (typeof turf !== 'undefined') {
+        geojsonData.features.forEach(feature => {
+          try {
+            const distName = feature.properties.NAME_2 || feature.properties.district || "Unknown";
+            let hash = 0;
+            for (let i = 0; i < distName.length; i++) hash = (hash * 31 + distName.charCodeAt(i)) & 0xffffffff;
+            const variance = (Math.abs(hash % 40) - 20) / 100;
+            const baseAgri = state.land && state.land.agriculture ? state.land.agriculture : 40;
+            const distAgri = Math.min(85, Math.max(10, Math.round(baseAgri * (1 + variance * 0.5))));
+            const crop = crops[Math.abs(hash) % crops.length];
+            
+            // Approximate the agricultural area by scaling the district polygon down
+            // If area is A, scaled area is A * scale^2. So scale = sqrt(distAgri / 100)
+            const scaleFactor = Math.sqrt(distAgri / 100);
+            const scaledFeature = turf.transformScale(feature, scaleFactor);
+            
+            // Re-assign properties for popup binding
+            scaledFeature.properties = feature.properties || {};
+            scaledFeature.properties._distName = distName;
+            scaledFeature.properties._distAgri = distAgri;
+            scaledFeature.properties._crop = crop;
+            
+            approximatedFeatures.push(scaledFeature);
+          } catch (e) {
+            console.error("Turf scaling failed for feature", e);
+            feature.properties._distName = feature.properties.NAME_2 || "Unknown";
+            feature.properties._distAgri = 40;
+            feature.properties._crop = crops[0];
+            approximatedFeatures.push(feature);
+          }
+        });
+      } else {
+        approximatedFeatures = geojsonData.features;
+      }
+
+      const agriGeoJSON = {
+        type: "FeatureCollection",
+        features: approximatedFeatures
+      };
+
+      const layer = L.geoJSON(agriGeoJSON, {
+        style: (feature) => {
+          return {
+            color: '#eab308', // Yellow outline
+            fillColor: '#facc15',
+            fillOpacity: 0.25,
+            weight: 2,
+            dashArray: '4, 4'
+          };
+        },
+        onEachFeature: (feature, layer) => {
+          const distName = feature.properties._distName || feature.properties.NAME_2 || "Unknown";
+          const distAgri = feature.properties._distAgri || 40;
+          const crop = feature.properties._crop || "Unknown";
+
+          const popupHtml = `
+            <div class="gis-popup-content">
+              <span class="badge-black" style="background:#eab308; color:#000;">Agricultural Zone</span>
+              <h4 style="margin: 0.3rem 0;">${distName}</h4>
+              <div class="gis-popup-stats">
+                <div><span>Agri Land (Approx)</span><strong>${distAgri}%</strong></div>
+                <div><span>Primary Crop</span><strong>${crop}</strong></div>
+              </div>
+            </div>
+          `;
+          layer.bindPopup(popupHtml, { className: 'custom-gis-popup' });
+        }
+      });
+      this.agriDotsLayer.addLayer(layer);
+    };
+
+    let geojsonName = stateKey.replace(/ /g, '_');
+    const missingStatesMap = {
+      'ladakh': 'jammu_and_kashmir',
+      'telangana': 'andhra_pradesh',
+      'dadra_and_nagar_haveli_and_daman_and_diu': 'daman_and_diu',
+      'andaman_and_nicobar_islands': 'andaman_and_nicobar'
+    };
+    if (missingStatesMap[geojsonName]) {
+      geojsonName = missingStatesMap[geojsonName];
+    }
+
+    if (this.cachedDistrictGeoJSON[geojsonName]) {
+      drawAgriDistricts(this.cachedDistrictGeoJSON[geojsonName]);
+    } else {
+      // Keep track of previously loaded GeoJSON vars to detect new ones
+      const prevKeys = Object.keys(window).filter(k => k.startsWith('districtsGeoJSON_'));
+      
+      const script = document.createElement('script');
+      script.src = `assets/districts/${geojsonName}.js`;
+      script.onload = () => {
+        let data = window[`districtsGeoJSON_${geojsonName}`];
+        if (!data) {
+          // Fallback: find any new districtsGeoJSON_ variable that was just loaded
+          const newKeys = Object.keys(window).filter(k => k.startsWith('districtsGeoJSON_') && !prevKeys.includes(k));
+          if (newKeys.length > 0) {
+            data = window[newKeys[0]];
+          }
+        }
+        if (data) this.cachedDistrictGeoJSON[geojsonName] = data;
+        drawAgriDistricts(data || null);
+      };
+      script.onerror = () => drawAgriDistricts(null);
+      document.head.appendChild(script);
+    }
   }
 
   toggleOverlay(overlayKey, isChecked) {
